@@ -1,91 +1,149 @@
-# 🇦🇷 Mi Itinerario en Buenos Aires (10 al 23 de Octubre de 2026)
+# 🇦🇷 BA 2026 | Mi Itinerario en Buenos Aires (10 al 23 de Octubre)
 
-Aplicación web progresiva (PWA) interactiva, responsiva y diseñada a medida para organizar tu viaje a Buenos Aires, moverte en transporte público con Google Maps, controlar los gastos de la casa y planes, y consultar la guía de supervivencia porteña.
+> **Progressive Web App (PWA)** offline-first diseñada a medida para organizar el viaje a Buenos Aires: itinerario interactivo día a día, control de liquidez y presupuesto con cotización en tiempo real, escáner OCR de comprobantes, rutas en transporte público y guía de supervivencia porteña.
+
+Construida con **React 19**, **TypeScript**, **Vite**, **Supabase** y un diseño visual centralizado en un archivo madre único de estilos (`src/index.css`).
 
 ---
 
 ## ✨ Características Principales
 
-1. **Itinerario Día por Día (14 Días):**
-   - Desde el **Sábado 10 de octubre a las 5:30 AM** (llegada y aclimatación) hasta el **Viernes 23 de octubre a las 3:30 PM** (despedida y vuelo).
-   - Agrupación por barrios lógicos: *San Telmo, Plaza de Mayo / Centro, Palermo Soho & Hollywood, Recoleta, La Boca, Puerto Madero & Costanera, Bosques de Palermo & Asado, Delta del Tigre, Chacarita & Villa Crespo, Miradores Porteños y Despedida*.
-   - **Interruptor "¿Va mi amiga?":** Filtra y marca qué planes haces acompañado y cuáles en solitario.
-   - **Check de planes listos:** Marca cada actividad conforme la vas realizando.
+1. **🗺️ Itinerario Inteligente (14 Días):**
+   - Vistas duales intercambiables: **Tablero Kanban horizontal** con drag & drop y **Timeline cronológico** día a día.
+   - Tarjetas dinámicas con soporte para **Planes**, **Lotes de Compras multi-ítem** (con desglose de precios individuales) y **Notas/Avisos**.
+   - Filtros por momento del día (Mañana, Tarde, Noche) y selector "¿Va mi amiga?" para planes en compañía o solitario.
+   - Botón directo de **¿Cómo llegar?** integrado con la API de Google Maps en modo **Transporte Público (Subte y Colectivos)**.
 
-2. **Integración Directa con Google Maps:**
-   - Botón **"¿Cómo llegar?"** en cada actividad: Abre automáticamente Google Maps en tu celular o PC con el destino preconfigurado y en modo **Transporte Público (Subte y Colectivo)** con rutas y tiempos en tiempo real.
+2. **💵 Billetera & Control de Liquidez:**
+   - Seguimiento del tope global de **$1.000 USD** con conversión automática entre **ARS y USD**.
+   - Control de liquidez en efectivo: **$500 USD cambiados = $760.000 ARS pactados** ($490.000 ARS recibidos en mano), diferenciando pagos en efectivo vs. tarjeta de crédito/débito.
+   - Ticker de cotización del **Dólar Blue en tiempo real** (conectado a `dolarapi.com`) con opción de ajuste manual.
+   - Sincronización espejo bidireccional: Cualquier actividad del itinerario con costo estimado genera y actualiza automáticamente su contraparte en la billetera.
 
-3. **Mapa Interactivo con Pines (Leaflet):**
-   - Vista general de todos los puntos de la ciudad con colores por categoría.
-   - Filtro por día y acceso rápido a rutas.
+3. **🛒 Secciones Dinámicas por Categoría:**
+   - Categorías predeterminadas (Mercado, Gastronomía, Regalos, Transporte, Salidas) y creación de categorías personalizadas.
+   - Calculadora integrada con teclado táctil, cinta de operaciones, atajos de redondeo y formulario rápido de tickets.
+   - Historial detallado de compras con filtrado por medio de pago (Efectivo / Tarjeta).
 
-4. **Control de Presupuesto & Mercado:**
-   - Diseñado especialmente para tu caso: **$0 de hospedaje** por quedarte en casa de tu amiga.
-   - Seguimiento enfocado en: **Mercado para la casa** (desayunos, picadas), **Restaurantes y bares**, **Transporte (SUBE/Apps)** y **Planes**.
-   - Conversión automática en tiempo real de **Pesos Argentinos (ARS) a Dólares (USD)** con cotización editable.
+4. **📷 Escáner OCR de Comprobantes & Facturas:**
+   - Captura directa desde la cámara del celular o subida de fotos de tickets.
+   - Visor Lightbox con **corrección de perspectiva interactiva de 4 esquinas** y zoom.
+   - Extracción de texto y montos con **Tesseract OCR**, previsualización editable y desglose automático de artículos detectados.
 
-5. **Guía Porteña & Tarjeta SUBE:**
-   - Mapa de líneas de Subte (A, B, C, D, E, H).
-   - Cómo pedir el boleto en colectivo ("¿Hasta dónde vas?").
-   - Descuento RED SUBE (50% y 75% en trasbordos dentro de las 2 horas).
-   - Dólar MEP con tarjeta extranjera, enchufes Tipo I y seguridad.
+5. **📍 Mapas & Navegación Porteña:**
+   - Mapa interactivo de la ciudad con **Leaflet** y pines codificados por color según la categoría de actividad.
+   - Guía porteña completa: mapa interactivo de líneas de Subte (A, B, C, D, E, H), cómo pedir el boleto en colectivo ("¿Hasta dónde vas?"), descuentos RED SUBE en trasbordos, consejos de seguridad y tipo de enchufes.
 
-6. **Checklist & Equipaje:**
-   - Lista interactiva de documentos, dinero, tecnología y equipaje.
-
-7. **Respaldo & WhatsApp:**
-   - Guarda automáticamente todo en la memoria de tu celular (`localStorage`).
-   - Botón para exportar e importar copias de seguridad en formato `.json`.
-   - Botón para compartir el enlace por WhatsApp.
-
----
-
-## 🚀 Cómo ponerla en tu celular (PWA con Vercel)
-
-### Paso 1: Subir a GitHub
-1. Abre tu terminal o GitHub Desktop.
-2. Crea un nuevo repositorio en [github.com](https://github.com) llamado `itinerario-argentina`.
-3. Ejecuta en esta carpeta:
-   ```bash
-   git remote add origin https://github.com/TU_USUARIO/itinerario-argentina.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-### Paso 2: Conectar a Vercel (Gratis en 1 minuto)
-1. Ve a [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
-2. Haz clic en **"Add New Project"** y selecciona el repositorio `itinerario-argentina`.
-3. Deja la configuración por defecto (Framework Preset: **Vite**).
-4. Presiona **Deploy**.
-5. ¡Listo! Vercel te dará una URL pública (ejemplo: `https://itinerario-argentina.vercel.app`).
-
-### Paso 3: Instalar en la Pantalla de Inicio de tu Teléfono
-1. Abre la URL de Vercel en el navegador de tu celular (Safari en iPhone o Chrome en Android).
-2. **En iPhone (Safari):**
-   - Toca el botón central de **Compartir** (icono de cuadrado con flecha hacia arriba).
-   - Desliza hacia abajo y selecciona **"Agregar a pantalla de inicio"** (Add to Home Screen).
-3. **En Android (Chrome):**
-   - Toca los tres puntos de la esquina superior derecha.
-   - Selecciona **"Instalar aplicación"** o **"Agregar a la pantalla principal"**.
-4. ¡Listo! Se abrirá como una app nativa con su icono del sol y obelisco porteño.
+6. **✅ Checklist & Respaldo:**
+   - Checklist de equipaje y documentos categorizado (Tecnología, Dinero, Documentos, Ropa).
+   - Modo Offline-First con respaldo automático en `localStorage` (con control de versiones de caché).
+   - Base de datos en la nube con **Supabase** y suscripciones Realtime para sincronizar cambios en vivo.
 
 ---
 
-## 🛠️ Ejecución Local para Desarrollo
+## 🏗️ Arquitectura del Código
 
+El proyecto sigue una arquitectura **Mobile-First modular** donde la lógica de negocio y persistencia está desacoplada de la interfaz de usuario:
+
+```
+src/
+├── types/                          # Contratos e interfaces TypeScript
+│   ├── activity.ts                 # Interfaces de actividades y compras
+│   ├── expense.ts                  # Interfaces de gastos, pagos y comprobantes
+│   ├── category.ts                 # Categorías y checklist
+│   └── supabase.ts                 # Mapeo snake_case (DB) <-> camelCase (UI) y SyncStatus
+│
+├── services/                       # Capa de datos desacoplada (BaaS & Local)
+│   ├── supabaseClient.ts           # Cliente singleton de Supabase
+│   ├── activityService.ts          # CRUD y serialización JSON de actividades
+│   ├── expenseService.ts           # CRUD de gastos y comprobantes
+│   ├── categoryChecklistService.ts # Persistencia de categorías y checklist
+│   ├── exchangeRateService.ts      # Fetch en vivo de cotización Dólar Blue
+│   ├── syncService.ts              # Carga inicial y suscripciones en tiempo real
+│   ├── mirrorSyncService.ts        # Sincronización espejo Itinerario <-> Billetera
+│   └── storageService.ts           # Hidratación y versionado de LocalStorage
+│
+├── hooks/                          # Custom Hooks para evitar Prop Drilling
+│   ├── useTripSync.ts              # Sincronización Supabase, Dólar Blue y LocalStorage
+│   ├── useItinerary.ts             # CRUD de actividades, modales y Kanban
+│   ├── useWallet.ts                # CRUD de gastos, liquidez, categorías y checklist
+│   └── useTripData.ts              # Hook integrador y métricas calculadas
+│
+├── components/                     # Microcomponentes UI (<250 líneas)
+│   ├── itinerary/                  # Kanban, Timeline, tarjetas y modales de días
+│   ├── wallet/                     # Hero, liquidez, categorías dinámicas y calculadora
+│   ├── scanner/                    # Cámara, OCR progress, revisión y lightbox
+│   ├── modals/                     # Modales de actividades, compras multi-ítem y gastos
+│   ├── auth/                       # Modal de inicio de sesión con Google y Magic Link
+│   ├── trips/                      # Selector de viajes y asistente de creación global
+│   ├── updates/                    # Barra de progreso, cuadrícula de novedades y release notes
+│   ├── common/                     # Header con ticker y barra de navegación
+│   ├── MapView.tsx                 # Mapa interactivo Leaflet
+│   ├── ChecklistView.tsx           # Checklist de viaje categorizado
+│   ├── SurvivalGuide.tsx           # Guía rápida de transporte y modismos
+│   └── ReceiptViewerModal.tsx      # Visor modal de comprobantes
+│
+├── App.tsx                         # Orquestador raíz ultraligero (~80 líneas)
+├── main.tsx                        # Punto de entrada TypeScript React
+└── index.css                       # Archivo madre único de estilos (No fragmentar)
+```
+
+---
+
+## 💻 Requisitos e Instalación en otra PC
+
+Para instalar y correr el proyecto en cualquier computadora sin complicaciones, consulta también el archivo [`requirements.txt`](./requirements.txt).
+
+### 1. Pre-requisitos de Software
+* **Node.js**: Versión 18.x o 20.x LTS recomendada ([Descargar Node.js](https://nodejs.org/)).
+* **npm**: Versión 9.x o superior (incluido con Node.js).
+* **Git**: Para clonar el repositorio ([Descargar Git](https://git-scm.com/)).
+
+### 2. Configuración de Variables de Entorno
+Copia el archivo de ejemplo `.env.example` creando un archivo `.env.local` en la raíz del proyecto:
 ```bash
-# Instalar dependencias
+cp .env.example .env.local
+```
+Configura tus credenciales de Supabase en `.env.local`:
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-public-key-aqui
+```
+*(Nota: Si no configuras Supabase, la app funciona de forma local con LocalStorage).*
+
+### 3. Comandos de Ejecución
+```bash
+# 1. Instalar todas las dependencias
 npm install
 
-# Iniciar servidor local
+# 2. Iniciar el servidor local de desarrollo
 npm run dev
 
-# Compilar para producción
+# 3. Comprobar tipos TypeScript (sin emitir archivos)
+npx tsc --noEmit
+
+# 4. Compilar para producción
 npm run build
 ```
 
 ---
 
-## 📐 Documentación Técnica y Arquitectura
+## 📱 Instalación como App en tu Celular (PWA)
 
-* Consulta la [Guía Maestra de Refactorización y Arquitectura](./ARCHITECTURE_MIGRATION_PLAN.md) para el plan de migración progresiva a TypeScript, microcomponentes y el modelo de datos de Supabase.
+Al estar desplegada en **Vercel** bajo HTTPS, tu celular detecta el archivo [`public/manifest.json`](./public/manifest.json) y te permite instalarla como aplicación nativa:
+
+* **En Android (Google Chrome):**
+  1. Abre la URL de tu proyecto en Vercel.
+  2. Presiona los tres puntos (`⋮`) arriba a la derecha.
+  3. Toca **"Instalar aplicación"** o **"Agregar a la pantalla principal"**.
+* **En iPhone (Safari):**
+  1. Abre la URL en Safari.
+  2. Toca el botón **Compartir** (cuadrado con flecha hacia arriba).
+  3. Desliza hacia abajo y selecciona **"Agregar a pantalla de inicio"**.
+
+¡Listo! La app se abrirá a pantalla completa con su propio icono sin barras del navegador y con respuesta táctil instantánea.
+
+---
+
+## 📄 Licencia y Documentación Técnica Adicional
+* Consulta la [Hoja de Ruta Global, Reglas de Negocio y Progreso (ROADMAP.md)](./ROADMAP.md) para conocer la evolución a plataforma SaaS multi-viaje, el esquema de datos de Supabase y las pautas para agentes de IA y desarrolladores.

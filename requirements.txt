@@ -1,0 +1,83 @@
+# ==============================================================================
+# REQUISITOS Y GUÍA DE INSTALACIÓN RÁPIDA - ITINERARIO ARGENTINA 2026
+# ==============================================================================
+# Este proyecto es una Progressive Web App (PWA) construida sobre el ecosistema
+# Node.js + React 19 + Vite + TypeScript + Supabase.
+#
+# Para ejecutar o instalar este proyecto en cualquier otra PC sin complicaciones,
+# sigue los requisitos y pasos listados a continuación:
+
+# ------------------------------------------------------------------------------
+# 1. REQUISITOS DE SOFTWARE DEL SISTEMA (Pre-requisitos)
+# ------------------------------------------------------------------------------
+# - Node.js: Versión 18.x, 20.x o superior (LTS recomendada: v20.x)
+#   Descarga: https://nodejs.org/
+# - npm: Versión 9.x o superior (incluido automáticamente con Node.js)
+# - Git: Para clonar el repositorio
+#   Descarga: https://git-scm.com/
+# - Navegador Web: Google Chrome, Brave, Safari, Edge o Firefox
+
+# ------------------------------------------------------------------------------
+# 2. VARIABLES DE ENTORNO REQUERIDAS (.env.local)
+# ------------------------------------------------------------------------------
+# En la raíz del proyecto, debes crear un archivo llamado `.env.local`
+# (puedes duplicar `.env.example`) con las credenciales de tu proyecto Supabase:
+#
+# VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+# VITE_SUPABASE_ANON_KEY=tu-anon-public-key-aqui
+#
+# Nota: La app funciona en modo local/offline con LocalStorage si no configuras
+# Supabase, pero para sincronización en tiempo real y en la nube es necesario.
+
+# ------------------------------------------------------------------------------
+# 3. PASOS DE INSTALACIÓN EN OTRA PC (Terminal / Consola)
+# ------------------------------------------------------------------------------
+# Paso A: Clonar el repositorio
+#   git clone https://github.com/TU_USUARIO/itinerario-argentina.git
+#   cd itinerario-argentina
+#
+# Paso B: Configurar variables de entorno
+#   cp .env.example .env.local
+#   (Edita .env.local con tu VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY)
+#
+# Paso C: Instalar todas las dependencias del proyecto
+#   npm install
+#
+# Paso D: Iniciar el servidor local de desarrollo
+#   npm run dev
+#   (Se abrirá en http://localhost:5173 con recarga en vivo)
+#
+# Paso E: Verificar compilación y tipos para producción
+#   npm run build
+
+# ------------------------------------------------------------------------------
+# 4. DEPENDENCIAS PRINCIPALES DEL PROYECTO (package.json)
+# ------------------------------------------------------------------------------
+# Framework & UI:
+react>=19.0.0
+react-dom>=19.0.0
+lucide-react>=1.16.0
+canvas-confetti>=1.9.4
+
+# Mapas & Geolocalización:
+leaflet>=1.9.4
+react-leaflet>=5.0.0
+
+# Base de Datos & Sincronización en Tiempo Real:
+@supabase/supabase-js>=2.49.1
+
+# Motor OCR de Escaneo de Tickets:
+tesseract.js>=5.1.1
+
+# ------------------------------------------------------------------------------
+# 5. DEPENDENCIAS DE DESARROLLO (Compilación & Tipado)
+# ------------------------------------------------------------------------------
+vite>=8.3.0
+@vitejs/plugin-react>=5.0.0
+typescript>=5.7.3
+oxlint>=1.42.0
+@types/react>=19.0.10
+@types/react-dom>=19.0.4
+@types/leaflet>=1.9.16
+@types/canvas-confetti>=1.9.0
+
