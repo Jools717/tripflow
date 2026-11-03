@@ -82,6 +82,7 @@ export default function App() {
             onDeleteCategory={trip.handleDeleteCategory}
             exchangeRate={trip.exchangeRate}
             onUpdateExchangeRate={trip.handleUpdateExchangeRate}
+            activeTrip={trip.activeTrip}
           />
         )}
 

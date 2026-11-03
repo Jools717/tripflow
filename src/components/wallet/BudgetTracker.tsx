@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Activity } from '../../types/activity';
 import { Expense, MediaReceipt } from '../../types/expense';
 import { ExpenseCategory } from '../../types/category';
+import { Trip } from '../../types/trip';
 import {
   parseCurrencyNumber,
   getExpensePaymentMethod,
@@ -31,6 +32,7 @@ interface BudgetTrackerProps {
   exchangeRate?: number;
   onUpdateExchangeRate: (rate: number) => void;
   onUpdateExpense?: (updated: Expense) => void;
+  activeTrip?: Trip;
 }
 
 export default function BudgetTracker({
@@ -45,10 +47,14 @@ export default function BudgetTracker({
   onDeleteCategory,
   exchangeRate = 1540,
   onUpdateExchangeRate,
-  onUpdateExpense
+  onUpdateExpense,
+  activeTrip
 }: BudgetTrackerProps) {
-  const BUDGET_CAP_USD = 1000;
-  const safeRate = (Number(exchangeRate) && Number(exchangeRate) >= 100) ? Number(exchangeRate) : 1540;
+  const baseCurrency = activeTrip?.baseCurrency || 'USD';
+  const localCurrency = activeTrip?.localCurrency || 'ARS';
+  const countryCode = activeTrip?.countryCode || 'AR';
+  const budgetCapUSD = activeTrip?.budgetTotalBase || 1000;
+  const safeRate = (Number(exchangeRate) && Number(exchangeRate) > 0) ? Number(exchangeRate) : 1540;
 
   const [activeSubTab, setActiveSubTab] = useState('general');
   const [editingExpenseItem, setEditingExpenseItem] = useState<WalletExpenseItem | null>(null);
@@ -91,9 +97,9 @@ export default function BudgetTracker({
   const totalDirectARS = expenses.reduce((sum, e) => sum + (Number(e.amountARS) || 0), 0);
   const totalARS = mergedExpenses.reduce((sum, e) => sum + (Number(e.amountARS) || 0), 0);
   const totalUSD = totalARS / safeRate;
-  const remainingUSD = Math.max(0, BUDGET_CAP_USD - totalUSD);
+  const remainingUSD = Math.max(0, budgetCapUSD - totalUSD);
   const remainingARS = remainingUSD * safeRate;
-  const percentUsed = Math.min(100, Math.round((totalUSD / BUDGET_CAP_USD) * 100));
+  const percentUsed = Math.min(100, Math.round((totalUSD / budgetCapUSD) * 100));
 
   const handleOpenReceipt = (expense: WalletExpenseItem) => {
     if (!expense.receipt_id) return;
@@ -142,6 +148,10 @@ export default function BudgetTracker({
             remainingUSD={remainingUSD}
             remainingARS={remainingARS}
             percentUsed={percentUsed}
+            budgetCapUSD={budgetCapUSD}
+            baseCurrency={baseCurrency}
+            localCurrency={localCurrency}
+            countryCode={countryCode}
           />
 
           <LiquidityTracker
@@ -149,10 +159,13 @@ export default function BudgetTracker({
             totalARS={totalARS}
             totalUSD={totalUSD}
             safeRate={safeRate}
-            budgetCapUsd={BUDGET_CAP_USD}
+            budgetCapUsd={budgetCapUSD}
             paymentFilter={paymentFilter}
             setPaymentFilter={setPaymentFilter}
             setActiveSubTab={setActiveSubTab}
+            localCurrency={localCurrency}
+            baseCurrency={baseCurrency}
+            countryCode={countryCode}
           />
 
           <div className="budget-main-layout">
@@ -162,6 +175,9 @@ export default function BudgetTracker({
               totalARS={totalARS}
               safeRate={safeRate}
               onAddExpense={(exp) => onAddExpense(exp)}
+              localCurrency={localCurrency}
+              baseCurrency={baseCurrency}
+              countryCode={countryCode}
             />
 
             <ExpenseList
@@ -174,6 +190,9 @@ export default function BudgetTracker({
               onEditExpense={setEditingExpenseItem}
               onDeleteExpense={onDeleteExpense}
               onUpdateActivityCost={onUpdateActivityCost}
+              localCurrency={localCurrency}
+              baseCurrency={baseCurrency}
+              countryCode={countryCode}
             />
           </div>
         </>

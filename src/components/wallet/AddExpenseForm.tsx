@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Expense, PaymentMethod } from '../../types/expense';
 import { ExpenseCategory } from '../../types/category';
-import { formatCurrencyARS, convertUsdToArs, parseCurrencyNumber } from '../../utils/helpers';
+import { formatCurrency, parseCurrencyNumber, getCurrencyFlag, getCurrencySymbol } from '../../utils/helpers';
 
 interface AddExpenseFormProps {
   categories: ExpenseCategory[];
@@ -10,29 +10,37 @@ interface AddExpenseFormProps {
   totalARS: number;
   safeRate: number;
   onAddExpense: (expense: Expense) => void;
+  localCurrency?: string;
+  baseCurrency?: string;
+  countryCode?: string;
 }
 
 export default function AddExpenseForm({
   categories,
-  mergedExpenses,
-  totalARS,
   safeRate,
-  onAddExpense
+  onAddExpense,
+  localCurrency = 'ARS',
+  baseCurrency = 'USD',
+  countryCode = 'AR'
 }: AddExpenseFormProps) {
+  const localFlag = getCurrencyFlag(localCurrency, countryCode);
+  const baseFlag = getCurrencyFlag(baseCurrency, baseCurrency === 'USD' ? 'US' : undefined);
+  const localSymbol = getCurrencySymbol(localCurrency);
+
   const [newConcept, setNewConcept] = useState('');
   const [newCategory, setNewCategory] = useState('mercado');
   const [newPaymentMethod, setNewPaymentMethod] = useState<PaymentMethod>('efectivo');
-  const [inputCurrency, setInputCurrency] = useState<'ARS' | 'USD'>('ARS');
+  const [currencyMode, setCurrencyMode] = useState<'LOCAL' | 'BASE'>('LOCAL');
   const [rawAmount, setRawAmount] = useState('');
   const [newNote, setNewNote] = useState('');
 
   const parsedRawAmount = parseCurrencyNumber(rawAmount);
-  const computedARS = inputCurrency === 'ARS' ? parsedRawAmount : convertUsdToArs(parsedRawAmount, safeRate);
-  const computedUSD = inputCurrency === 'USD' ? parsedRawAmount : parsedRawAmount / safeRate;
+  const computedLocal = currencyMode === 'LOCAL' ? parsedRawAmount : Math.round(parsedRawAmount * safeRate);
+  const computedBase = currencyMode === 'BASE' ? parsedRawAmount : (safeRate > 0 ? parsedRawAmount / safeRate : 0);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newConcept.trim() || !rawAmount || computedARS <= 0) {
+    if (!newConcept.trim() || !rawAmount || computedLocal <= 0) {
       alert('Ingresa el concepto y un monto válido');
       return;
     }
@@ -42,7 +50,7 @@ export default function AddExpenseForm({
       date: new Date().toISOString().split('T')[0],
       concept: newConcept.trim(),
       category: newCategory,
-      amountARS: Math.round(computedARS),
+      amountARS: Math.round(computedLocal),
       paymentMethod: newPaymentMethod,
       paidBy: newPaymentMethod === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
       note: newNote.trim()
@@ -59,7 +67,7 @@ export default function AddExpenseForm({
       <div className="form-card">
         <div className="form-card-title">
           <Plus size={18} />
-          <h4>Registrar Nuevo Gasto General</h4>
+          <h4>Registrar Nuevo Gasto ({localFlag} {localCurrency})</h4>
         </div>
 
         <form onSubmit={handleAddSubmit} className="add-expense-form">
@@ -67,7 +75,7 @@ export default function AddExpenseForm({
             <label>Concepto del Gasto *</label>
             <input
               type="text"
-              placeholder="Ej: Almuerzo parrilla, SUBE, entrada museo..."
+              placeholder="Ej: Almuerzo, transporte, souvenir..."
               value={newConcept}
               onChange={(e) => setNewConcept(e.target.value)}
               className="form-input"
@@ -81,27 +89,29 @@ export default function AddExpenseForm({
               <div className="currency-toggle-chips">
                 <button
                   type="button"
-                  className={`curr-btn ${inputCurrency === 'ARS' ? 'active' : ''}`}
-                  onClick={() => setInputCurrency('ARS')}
+                  className={`curr-btn ${currencyMode === 'LOCAL' ? 'active' : ''}`}
+                  onClick={() => setCurrencyMode('LOCAL')}
                 >
-                  En Pesos (ARS)
+                  {localFlag} En {localCurrency}
                 </button>
                 <button
                   type="button"
-                  className={`curr-btn ${inputCurrency === 'USD' ? 'active' : ''}`}
-                  onClick={() => setInputCurrency('USD')}
+                  className={`curr-btn ${currencyMode === 'BASE' ? 'active' : ''}`}
+                  onClick={() => setCurrencyMode('BASE')}
                 >
-                  En Dólares (USD Blue)
+                  {baseFlag} En {baseCurrency}
                 </button>
               </div>
             </div>
 
             <div className="currency-input-wrapper">
-              <span className="curr-symbol">{inputCurrency === 'ARS' ? '$ ARS' : '$ USD'}</span>
+              <span className="curr-symbol">
+                {currencyMode === 'LOCAL' ? `${localFlag} ${localSymbol}` : `${baseFlag} $`}
+              </span>
               <input
                 type="text"
                 inputMode="decimal"
-                placeholder={inputCurrency === 'ARS' ? 'Ej: 19.741' : 'Ej: 15'}
+                placeholder={currencyMode === 'LOCAL' ? `Monto en ${localCurrency}` : `Monto en ${baseCurrency}`}
                 value={rawAmount}
                 onChange={(e) => setRawAmount(e.target.value)}
                 className="form-input"
@@ -112,9 +122,9 @@ export default function AddExpenseForm({
             {rawAmount && (
               <div className="conversion-preview-box">
                 <span>Equivalente simultáneo:</span>
-                <strong>{formatCurrencyARS(computedARS)} ARS</strong>
+                <strong>{localFlag} {formatCurrency(computedLocal, localCurrency)}</strong>
                 <span>=</span>
-                <strong>${computedUSD.toFixed(1)} USD Blue</strong>
+                <strong>{baseFlag} {formatCurrency(computedBase, baseCurrency)}</strong>
               </div>
             )}
           </div>
@@ -134,107 +144,35 @@ export default function AddExpenseForm({
             </div>
 
             <div className="form-group">
-              <label>Método de Pago</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '4px' }}>
-                <button
-                  type="button"
-                  onClick={() => setNewPaymentMethod('efectivo')}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: newPaymentMethod === 'efectivo' ? '2px solid #10b981' : '1px solid var(--border-color, #e2e8f0)',
-                    background: newPaymentMethod === 'efectivo' ? 'rgba(16, 185, 129, 0.14)' : 'transparent',
-                    color: newPaymentMethod === 'efectivo' ? '#10b981' : 'inherit',
-                    fontWeight: newPaymentMethod === 'efectivo' ? '700' : '500',
-                    cursor: 'pointer',
-                    fontSize: '0.85rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span>💵</span>
-                  <span>Efectivo</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNewPaymentMethod('tarjeta')}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: newPaymentMethod === 'tarjeta' ? '2px solid #3b82f6' : '1px solid var(--border-color, #e2e8f0)',
-                    background: newPaymentMethod === 'tarjeta' ? 'rgba(59, 130, 246, 0.14)' : 'transparent',
-                    color: newPaymentMethod === 'tarjeta' ? '#3b82f6' : 'inherit',
-                    fontWeight: newPaymentMethod === 'tarjeta' ? '700' : '500',
-                    cursor: 'pointer',
-                    fontSize: '0.85rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span>💳</span>
-                  <span>Tarjeta</span>
-                </button>
-              </div>
+              <label>Medio de Pago</label>
+              <select
+                value={newPaymentMethod}
+                onChange={(e) => setNewPaymentMethod(e.target.value as PaymentMethod)}
+                className="form-select"
+              >
+                <option value="efectivo">💵 Efectivo Físico</option>
+                <option value="tarjeta">💳 Tarjeta Débito / Crédito</option>
+              </select>
             </div>
           </div>
 
           <div className="form-group">
-            <label>Nota / Detalle (Opcional)</label>
+            <label>Nota o Detalle (Opcional)</label>
             <input
               type="text"
-              placeholder="Ej: Incluyó propina del 10%"
+              placeholder="Detalle o lugar de compra..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               className="form-input"
             />
           </div>
 
-          <button type="submit" className="btn-primary full-width">
-            <Plus size={16} />
-            <span>Agregar a la Billetera</span>
+          <button type="submit" className="btn-primary btn-submit-expense">
+            <Plus size={18} />
+            <span>Guardar Gasto ({localFlag} {localCurrency})</span>
           </button>
         </form>
-      </div>
-
-      {/* Category Breakdown */}
-      <div className="category-breakdown-card">
-        <h4>Distribución por Categorías</h4>
-        <div className="breakdown-list">
-          {categories.map(cat => {
-            const amount = mergedExpenses
-              .filter(e => e.category === cat.id)
-              .reduce((sum, e) => sum + (Number(e.amountARS) || 0), 0);
-            const pct = totalARS > 0 ? Math.round((amount / totalARS) * 100) : 0;
-
-            return (
-              <div key={cat.id} className="breakdown-row">
-                <div className="breakdown-info">
-                  <span className="cat-color-dot" style={{ backgroundColor: cat.color }}></span>
-                  <span className="cat-name">{cat.name}</span>
-                  <div className="cat-amounts-dual">
-                    <span className="cat-amount-ars">{formatCurrencyARS(amount)}</span>
-                    <span className="cat-amount-usd">≈ ${(amount / safeRate).toFixed(1)} USD</span>
-                  </div>
-                  <span className="cat-pct">{pct}%</span>
-                </div>
-                <div className="breakdown-bar-track">
-                  <div
-                    className="breakdown-bar-fill"
-                    style={{ width: `${pct}%`, backgroundColor: cat.color }}
-                  ></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
 }
-

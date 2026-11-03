@@ -2,7 +2,7 @@ import React from 'react';
 import { Trash2, Camera, Edit3 } from 'lucide-react';
 import { Expense } from '../../types/expense';
 import { ExpenseCategory } from '../../types/category';
-import { formatCurrencyARS, getExpensePaymentMethod } from '../../utils/helpers';
+import { formatCurrency, getExpensePaymentMethod, getCurrencyFlag } from '../../utils/helpers';
 
 export interface WalletExpenseItem extends Expense {
   dayNumber?: number;
@@ -17,6 +17,9 @@ interface ExpenseRowProps {
   onEditExpense: (exp: WalletExpenseItem) => void;
   onDeleteExpense: (id: string, exp: WalletExpenseItem) => void;
   onUpdateActivityCost?: (activityId: string, newCost: number) => void;
+  localCurrency?: string;
+  baseCurrency?: string;
+  countryCode?: string;
 }
 
 export default function ExpenseRow({
@@ -26,8 +29,14 @@ export default function ExpenseRow({
   onOpenReceipt,
   onEditExpense,
   onDeleteExpense,
-  onUpdateActivityCost
+  onUpdateActivityCost,
+  localCurrency = 'ARS',
+  baseCurrency = 'USD',
+  countryCode = 'AR'
 }: ExpenseRowProps) {
+  const localFlag = getCurrencyFlag(localCurrency, countryCode);
+  const baseFlag = getCurrencyFlag(baseCurrency, baseCurrency === 'USD' ? 'US' : undefined);
+
   const catObj = categories.find(c => c.id === exp.category) || { name: 'Varios', color: '#64748b' };
   const expUSD = (Number(exp.amountARS) || 0) / safeRate;
   const hasReceipt = Boolean(exp.receipt_id);
@@ -46,7 +55,7 @@ export default function ExpenseRow({
           {exp.items && exp.items.length > 0 && (
             <span
               className="expense-items-pill-tag"
-              title={exp.items.map(i => `• ${i.name}: ${formatCurrencyARS(i.price || 0)}`).join('\n')}
+              title={exp.items.map(i => `• ${i.name}: ${formatCurrency(i.price || 0, localCurrency)}`).join('\n')}
             >
               🛍️ {exp.items.length} {exp.items.length === 1 ? 'artículo' : 'artículos'}
             </span>
@@ -94,10 +103,10 @@ export default function ExpenseRow({
 
       <div className="expense-amount-group">
         <div className="expense-amount-ars-badge">
-          {formatCurrencyARS(exp.amountARS)}
+          {localFlag} {formatCurrency(exp.amountARS, localCurrency)}
         </div>
         <div className="expense-amount-usd-badge">
-          ≈ ${expUSD.toFixed(1)} <small>USD Blue</small>
+          ≈ {baseFlag} ${expUSD.toFixed(1)} <small>{baseCurrency}</small>
         </div>
       </div>
 
@@ -136,4 +145,3 @@ export default function ExpenseRow({
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, ArrowRightLeft, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
-import { formatCurrencyARS, parseCurrencyNumber } from '../../utils/helpers';
+import { formatCurrency, parseCurrencyNumber, getCurrencyFlag, getCurrencySymbol } from '../../utils/helpers';
+import { fetchLiveExchangeRate } from '../../services/fxRatesService';
 
 interface WalletHeroProps {
   exchangeRate: number;
@@ -13,6 +14,10 @@ interface WalletHeroProps {
   remainingUSD: number;
   remainingARS: number;
   percentUsed: number;
+  budgetCapUSD?: number;
+  baseCurrency?: string;
+  localCurrency?: string;
+  countryCode?: string;
 }
 
 export default function WalletHero({
@@ -25,14 +30,22 @@ export default function WalletHero({
   totalDirectARS,
   remainingUSD,
   remainingARS,
-  percentUsed
+  percentUsed,
+  budgetCapUSD = 1000,
+  baseCurrency = 'USD',
+  localCurrency = 'ARS',
+  countryCode = 'AR'
 }: WalletHeroProps) {
+  const baseFlag = getCurrencyFlag(baseCurrency, baseCurrency === 'USD' ? 'US' : undefined);
+  const localFlag = getCurrencyFlag(localCurrency, countryCode);
+  const localSymbol = getCurrencySymbol(localCurrency);
+
   const [rateInput, setRateInput] = useState(exchangeRate ? exchangeRate.toString() : '1540');
   const [isFetchingRate, setIsFetchingRate] = useState(false);
-  const [lastRateUpdate, setLastRateUpdate] = useState<{ compra: number; venta: number; time: string } | null>(null);
+  const [lastRateUpdate, setLastRateUpdate] = useState<string | null>(null);
 
   useEffect(() => {
-    if (exchangeRate && exchangeRate >= 100) {
+    if (exchangeRate && exchangeRate > 0) {
       setRateInput(exchangeRate.toString());
     }
   }, [exchangeRate]);
@@ -41,15 +54,15 @@ export default function WalletHero({
     const val = e.target.value;
     setRateInput(val);
     const parsed = parseCurrencyNumber(val);
-    if (parsed >= 100 && onUpdateExchangeRate) {
+    if (parsed > 0 && onUpdateExchangeRate) {
       onUpdateExchangeRate(parsed);
     }
   };
 
   const handleRateInputBlur = () => {
     const parsed = parseCurrencyNumber(rateInput);
-    if (!parsed || parsed < 100) {
-      const fallback = (exchangeRate && exchangeRate >= 100) ? exchangeRate : 1540;
+    if (!parsed || parsed <= 0) {
+      const fallback = (exchangeRate && exchangeRate > 0) ? exchangeRate : 1540;
       setRateInput(fallback.toString());
       if (onUpdateExchangeRate) onUpdateExchangeRate(fallback);
     } else if (onUpdateExchangeRate) {
@@ -63,19 +76,16 @@ export default function WalletHero({
     }
   };
 
-  const fetchLiveDolarBlue = async () => {
+  const fetchLiveRate = async () => {
     setIsFetchingRate(true);
+    setLastRateUpdate(null);
     try {
-      const res = await fetch('https://dolarapi.com/v1/dolares/blue');
-      if (res.ok) {
-        const data = await res.json();
-        const live = Number(data.compra) || Number(data.venta);
-        if (live && live >= 100 && onUpdateExchangeRate) {
-          onUpdateExchangeRate(live);
-          setRateInput(live.toString());
-          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          setLastRateUpdate({ compra: data.compra, venta: data.venta, time: timeStr });
-        }
+      const res = await fetchLiveExchangeRate(baseCurrency, localCurrency, countryCode);
+      if (res.rate && res.rate > 0 && onUpdateExchangeRate) {
+        onUpdateExchangeRate(res.rate);
+        setRateInput(res.rate.toString());
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setLastRateUpdate(`${res.source} (${timeStr}): 1 ${baseCurrency} = ${res.rate} ${localCurrency}`);
       }
     } catch (err) {
       console.warn('No se pudo obtener cotización automática:', err);
@@ -86,12 +96,12 @@ export default function WalletHero({
 
   const getStatusBadge = () => {
     if (percentUsed >= 90) {
-      return { label: '¡Atención! Cerca del tope de $1.000 USD', class: 'danger', icon: AlertTriangle };
+      return { label: `¡Atención! Cerca del tope de ${baseFlag} $${budgetCapUSD} ${baseCurrency}`, class: 'danger', icon: AlertTriangle };
     }
     if (percentUsed >= 70) {
-      return { label: 'Gastado más del 70% del presupuesto', class: 'warning', icon: AlertTriangle };
+      return { label: `Gastado más del 70% del presupuesto`, class: 'warning', icon: AlertTriangle };
     }
-    return { label: '¡Ritmo excelente! Por debajo del tope', class: 'healthy', icon: CheckCircle2 };
+    return { label: `¡Ritmo excelente! Por debajo del tope`, class: 'healthy', icon: CheckCircle2 };
   };
 
   const status = getStatusBadge();
@@ -106,31 +116,31 @@ export default function WalletHero({
           </div>
           <div>
             <div className="wallet-title-row">
-              <h3>Billetera del Viaje (Tope $1.000 USD Blue)</h3>
+              <h3>Billetera del Viaje ({baseFlag} Tope ${budgetCapUSD} {baseCurrency})</h3>
               <span className={`wallet-status-chip ${status.class}`}>
                 <StatusIcon size={14} />
                 <span>{status.label}</span>
               </span>
             </div>
             <p className="wallet-subtitle">
-              Hospedaje en casa de tu amiga ($0). Se suman automáticamente los valores de tus <strong>cards del itinerario</strong> y tus <strong>gastos/tickets registrados</strong>.
+              Se suman automáticamente los valores de tus <strong>cards del itinerario</strong> y tus <strong>gastos/tickets registrados</strong> en {localFlag} <strong>{localCurrency}</strong>.
             </p>
           </div>
         </div>
 
-        {/* Dólar Blue Rate Adjuster */}
+        {/* Currency Rate Adjuster with Flags */}
         <div className="blue-rate-card">
           <div className="blue-rate-header">
             <div className="blue-rate-title">
               <ArrowRightLeft size={14} className="text-amber" />
-              <span>Cotización Dólar Blue</span>
+              <span>Cotización {baseFlag} {baseCurrency} ➔ {localFlag} {localCurrency}</span>
             </div>
             <button
               type="button"
               className="btn-fetch-live-rate"
-              onClick={fetchLiveDolarBlue}
+              onClick={fetchLiveRate}
               disabled={isFetchingRate}
-              title="Consultar precio real de hoy en DolarApi.com"
+              title={`Consultar precio en vivo de ${baseCurrency} a ${localCurrency}`}
             >
               <RefreshCw size={12} className={isFetchingRate ? 'spin-icon' : ''} />
               <span>{isFetchingRate ? 'Consultando...' : 'En vivo'}</span>
@@ -138,7 +148,7 @@ export default function WalletHero({
           </div>
 
           <div className="blue-rate-input-row">
-            <span className="rate-prefix">1 USD = $</span>
+            <span className="rate-prefix">{baseFlag} 1 {baseCurrency} = {localSymbol}</span>
             <input
               type="text"
               inputMode="decimal"
@@ -146,48 +156,56 @@ export default function WalletHero({
               onChange={handleRateInputChange}
               onBlur={handleRateInputBlur}
               onKeyDown={handleRateKeyDown}
-              placeholder="1540"
+              placeholder="1"
               className="blue-rate-field"
-              title="Ajusta el valor en Pesos Argentinos (ARS) de 1 Dólar"
-              aria-label="Pesos Argentinos por 1 USD"
+              title={`Ajusta el valor en ${localCurrency} de 1 ${baseCurrency}`}
+              aria-label={`${localCurrency} por 1 ${baseCurrency}`}
             />
-            <span className="rate-suffix">ARS</span>
+            <span className="rate-suffix">{localFlag} {localCurrency}</span>
           </div>
 
           {lastRateUpdate && (
             <div className="live-rate-sub-tag">
-              ✓ DolarApi ({lastRateUpdate.time}): Compra ${lastRateUpdate.compra} / Venta ${lastRateUpdate.venta}
+              ✓ {lastRateUpdate}
             </div>
           )}
 
-          <div className="rate-preset-chips">
-            <button type="button" onClick={() => onUpdateExchangeRate(1540)} className={`preset-btn ${Number(exchangeRate) === 1540 ? 'active' : ''}`}>1540 (Compra)</button>
-            <button type="button" onClick={() => onUpdateExchangeRate(1560)} className={`preset-btn ${Number(exchangeRate) === 1560 ? 'active' : ''}`}>1560 (Venta)</button>
-            <button type="button" onClick={() => onUpdateExchangeRate(1500)} className={`preset-btn ${Number(exchangeRate) === 1500 ? 'active' : ''}`}>1500</button>
-            <button type="button" onClick={() => onUpdateExchangeRate(1600)} className={`preset-btn ${Number(exchangeRate) === 1600 ? 'active' : ''}`}>1600</button>
-          </div>
+          {countryCode === 'AR' ? (
+            <div className="rate-preset-chips">
+              <button type="button" onClick={() => onUpdateExchangeRate(1540)} className={`preset-btn ${Number(exchangeRate) === 1540 ? 'active' : ''}`}>🇦🇷 1540 (Compra)</button>
+              <button type="button" onClick={() => onUpdateExchangeRate(1560)} className={`preset-btn ${Number(exchangeRate) === 1560 ? 'active' : ''}`}>🇦🇷 1560 (Venta)</button>
+              <button type="button" onClick={() => onUpdateExchangeRate(1500)} className={`preset-btn ${Number(exchangeRate) === 1500 ? 'active' : ''}`}>1500</button>
+              <button type="button" onClick={() => onUpdateExchangeRate(1600)} className={`preset-btn ${Number(exchangeRate) === 1600 ? 'active' : ''}`}>1600</button>
+            </div>
+          ) : (
+            <div className="rate-preset-chips">
+              <span className="rate-hint-text">
+                {localFlag} Moneda oficial del destino: <strong>{localCurrency}</strong>
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Progress Bar towards $1,000 USD */}
+      {/* Progress Bar towards Budget Cap */}
       <div className="budget-cap-progress-section">
         <div className="progress-labels-row">
           <div className="progress-left-label">
-            <span>Total facturado en planes/gastos:</span>
-            <strong className="spent-val">{formatCurrencyARS(totalARS)}</strong>
-            <span className="spent-ars-sub">(Descuenta ≈ ${Math.round(totalUSD)} USD Blue)</span>
+            <span>Total gastado en {localFlag} {localCurrency}:</span>
+            <strong className="spent-val">{formatCurrency(totalARS, localCurrency)}</strong>
+            <span className="spent-ars-sub">(Descuenta ≈ {baseFlag} ${Math.round(totalUSD)} {baseCurrency})</span>
             <div className="spent-split-hint">
-              <span>Itinerario: {formatCurrencyARS(totalItineraryARS)} (≈ ${Math.round(totalItineraryARS / safeRate)} USD)</span>
-              <span>• Compras/Tickets: {formatCurrencyARS(totalDirectARS)} (≈ ${Math.round(totalDirectARS / safeRate)} USD)</span>
+              <span>Itinerario: {formatCurrency(totalItineraryARS, localCurrency)} (≈ {baseFlag} ${Math.round(totalItineraryARS / safeRate)} {baseCurrency})</span>
+              <span>• Compras/Tickets: {formatCurrency(totalDirectARS, localCurrency)} (≈ {baseFlag} ${Math.round(totalDirectARS / safeRate)} {baseCurrency})</span>
             </div>
           </div>
           <div className="progress-center-pct">
             <span>{percentUsed}% del tope</span>
           </div>
           <div className="progress-right-label">
-            <span>Efectivo disponible restante:</span>
-            <strong className="remaining-val">${Math.round(remainingUSD)} USD Blue</strong>
-            <span className="remaining-ars-sub">(Equivale a {formatCurrencyARS(remainingARS)})</span>
+            <span>Presupuesto restante:</span>
+            <strong className="remaining-val">{baseFlag} ${Math.round(remainingUSD)} {baseCurrency}</strong>
+            <span className="remaining-ars-sub">(Equivale a {localFlag} {formatCurrency(remainingARS, localCurrency)})</span>
           </div>
         </div>
 
@@ -201,4 +219,3 @@ export default function WalletHero({
     </div>
   );
 }
-

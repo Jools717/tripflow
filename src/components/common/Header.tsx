@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Wallet, CheckCircle2, ArrowRightLeft, RefreshCw, ChevronDown, User, Sparkles } from 'lucide-react';
-import { formatCurrencyARS, parseCurrencyNumber } from '../../utils/helpers';
+import { formatCurrency, parseCurrencyNumber, getCurrencyFlag, getCurrencySymbol } from '../../utils/helpers';
 import { Trip } from '../../types/trip';
 import { UserProfile } from '../../types/user';
+import { fetchLiveExchangeRate } from '../../services/fxRatesService';
 
 interface HeaderProps {
   activitiesCount: number;
@@ -33,37 +34,47 @@ export default function Header({
   onOpenAuthModal,
   onOpenWhatsNew
 }: HeaderProps) {
-  const [arsInput, setArsInput] = useState(exchangeRate ? exchangeRate.toString() : '1540');
+  const baseCurrency = activeTrip?.baseCurrency || 'USD';
+  const localCurrency = activeTrip?.localCurrency || 'ARS';
+  const countryCode = activeTrip?.countryCode || 'AR';
+
+  const baseFlag = getCurrencyFlag(baseCurrency, baseCurrency === 'USD' ? 'US' : undefined);
+  const localFlag = getCurrencyFlag(localCurrency, countryCode);
+  const localSymbol = getCurrencySymbol(localCurrency);
+
+  const [rateInput, setRateInput] = useState(exchangeRate ? exchangeRate.toString() : '1540');
   const [isFetchingRate, setIsFetchingRate] = useState(false);
+  const [rateFeedback, setRateFeedback] = useState<string | null>(null);
 
   const budgetCap = activeTrip?.budgetTotalBase || 1000;
-  const totalSpentUSD = totalSpentARS / (exchangeRate || 1540);
+  const safeRate = exchangeRate && exchangeRate > 0 ? exchangeRate : 1540;
+  const totalSpentUSD = totalSpentARS / safeRate;
   const remainingUSD = Math.max(0, budgetCap - totalSpentUSD);
   const budgetPercentage = Math.min(100, Math.round((totalSpentUSD / budgetCap) * 100));
 
   useEffect(() => {
-    if (exchangeRate && exchangeRate >= 100) {
-      setArsInput(exchangeRate.toString());
+    if (exchangeRate && exchangeRate > 0) {
+      setRateInput(exchangeRate.toString());
     }
   }, [exchangeRate]);
 
-  const handleArsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setArsInput(val);
-    const parsedArs = parseCurrencyNumber(val);
-    if (parsedArs >= 100 && onUpdateExchangeRate) {
-      onUpdateExchangeRate(parsedArs);
+    setRateInput(val);
+    const parsed = parseCurrencyNumber(val);
+    if (parsed > 0 && onUpdateExchangeRate) {
+      onUpdateExchangeRate(parsed);
     }
   };
 
-  const handleArsBlur = () => {
-    const parsedArs = parseCurrencyNumber(arsInput);
-    if (!parsedArs || parsedArs < 100) {
-      const fallback = (exchangeRate && exchangeRate >= 100) ? exchangeRate : 1540;
-      setArsInput(fallback.toString());
+  const handleRateBlur = () => {
+    const parsed = parseCurrencyNumber(rateInput);
+    if (!parsed || parsed <= 0) {
+      const fallback = (exchangeRate && exchangeRate > 0) ? exchangeRate : 1540;
+      setRateInput(fallback.toString());
       if (onUpdateExchangeRate) onUpdateExchangeRate(fallback);
     } else if (onUpdateExchangeRate) {
-      onUpdateExchangeRate(parsedArs);
+      onUpdateExchangeRate(parsed);
     }
   };
 
@@ -74,7 +85,7 @@ export default function Header({
   };
 
   const handleQuickPreset = (rate: number) => {
-    setArsInput(rate.toString());
+    setRateInput(rate.toString());
     if (onUpdateExchangeRate) {
       onUpdateExchangeRate(rate);
     }
@@ -82,14 +93,13 @@ export default function Header({
 
   const handleFetchLive = async () => {
     setIsFetchingRate(true);
+    setRateFeedback(null);
     try {
-      const res = await fetch('https://dolarapi.com/v1/dolares/blue');
-      if (res.ok) {
-        const data = await res.json();
-        const live = Number(data.compra) || Number(data.venta);
-        if (live && onUpdateExchangeRate) {
-          handleQuickPreset(live);
-        }
+      const res = await fetchLiveExchangeRate(baseCurrency, localCurrency, countryCode);
+      if (res.rate && res.rate > 0) {
+        handleQuickPreset(res.rate);
+        setRateFeedback(`${localFlag} Actualizado: 1 ${baseCurrency} = ${res.rate} ${localCurrency}`);
+        setTimeout(() => setRateFeedback(null), 3500);
       }
     } catch {
       // offline fallback
@@ -113,7 +123,7 @@ export default function Header({
           <div className="brand-logo">
             <span className="arg-flag-indicator">
               <span className="flag-stripe sky"></span>
-              <span className="flag-sun">{activeTrip?.flagEmoji || '☀️'}</span>
+              <span className="flag-sun">{activeTrip?.flagEmoji || localFlag}</span>
               <span className="flag-stripe sky"></span>
             </span>
           </div>
@@ -126,7 +136,7 @@ export default function Header({
                 onClick={onOpenTripSelector}
                 title="Cambiar o crear viaje"
               >
-                <span className="trip-flag-icon">{activeTrip?.flagEmoji || '🇦🇷'}</span>
+                <span className="trip-flag-icon">{activeTrip?.flagEmoji || localFlag}</span>
                 <span className="trip-title-text">{activeTrip?.title || 'Buenos Aires 2026'}</span>
                 <ChevronDown size={13} className="trip-chevron" />
               </button>
@@ -149,12 +159,12 @@ export default function Header({
                 </span>
               )}
               {cloudSyncStatus === 'saving' && (
-                <span className="cloud-badge syncing" title="Guardando cambios en Supabase">
+                <span className="cloud-badge syncing" title="Guardando cambios">
                   💾 Guardando...
                 </span>
               )}
               {cloudSyncStatus === 'syncing' && (
-                <span className="cloud-badge syncing" title="Sincronizando con la nube de Supabase">
+                <span className="cloud-badge syncing" title="Sincronizando datos">
                   🔄 Sincronizando...
                 </span>
               )}
@@ -164,6 +174,7 @@ export default function Header({
                 </span>
               )}
             </div>
+
             <div className="brand-title-flow-row">
               <span className="brand-app-name">TripFlow</span>
               <span className="brand-dot-separator">•</span>
@@ -171,7 +182,7 @@ export default function Header({
             </div>
             <p className="brand-subtitle">
               {activeTrip 
-                ? `${activeTrip.startDate} al ${activeTrip.endDate} • ${activeTrip.flagEmoji || '✈️'} ${activeTrip.title}` 
+                ? `${activeTrip.startDate} al ${activeTrip.endDate} • ${activeTrip.flagEmoji || localFlag} ${activeTrip.title}` 
                 : '10 al 23 de Octubre • 🇦🇷 Buenos Aires 2026'}
             </p>
           </div>
@@ -198,7 +209,7 @@ export default function Header({
           <div
             className={`stat-pill wallet-header-pill ${getBudgetMeterClass()}`}
             onClick={onNavigateToBudget}
-            title="Haz clic para ver el desglose en Gastos & Mercado"
+            title="Haz clic para ver el desglose en Gastos & Billetera"
             role="button"
             tabIndex={0}
           >
@@ -207,17 +218,19 @@ export default function Header({
             </div>
             <div className="stat-text wallet-stat-text">
               <div className="wallet-labels-row">
-                <span className="stat-label">Billetera (Tope ${budgetCap} {activeTrip?.baseCurrency || 'USD'})</span>
+                <span className="stat-label">
+                  Billetera ({baseFlag} Tope ${budgetCap} {baseCurrency})
+                </span>
                 <span className="wallet-remaining-tag">
-                  Quedan ${Math.round(remainingUSD)} {activeTrip?.baseCurrency || 'USD'}
+                  Quedan {baseFlag} ${Math.round(remainingUSD)} {baseCurrency}
                 </span>
               </div>
               <div className="wallet-values-row">
                 <span className="wallet-usd-val">
-                  ${Math.round(totalSpentUSD)} <small className="usd-cap">/ ${budgetCap} {activeTrip?.baseCurrency || 'USD'}</small>
+                  {baseFlag} ${Math.round(totalSpentUSD)} <small className="usd-cap">/ ${budgetCap} {baseCurrency}</small>
                 </span>
                 <span className="wallet-ars-val">
-                  ({formatCurrencyARS(totalSpentARS)})
+                  ({localFlag} {formatCurrency(totalSpentARS, localCurrency)})
                 </span>
               </div>
               <div className="header-budget-track">
@@ -232,9 +245,9 @@ export default function Header({
           {/* User Profile / Auth Button */}
           <button
             type="button"
-            className={`header-auth-btn ${user ? 'logged-in' : ''}`}
+            className={`header-auth-btn ${user ? 'logged-in' : ''} ${user?.role === 'admin' ? 'admin' : ''}`}
             onClick={onOpenAuthModal}
-            title={user ? `Sesión iniciada como: ${user.email}` : 'Iniciar sesión para sincronizar'}
+            title={user ? `Sesión iniciada como: ${user.displayName || user.email}` : 'Iniciar sesión para sincronizar'}
           >
             <User size={15} />
             <span className="auth-btn-label">
@@ -243,53 +256,62 @@ export default function Header({
           </button>
         </div>
 
-        {/* Input de Cotización de Moneda */}
+        {/* Input de Cotización de Moneda con Banderas */}
         <div className="header-currency-widget">
           <div className="currency-widget-top">
             <div className="currency-widget-title">
               <ArrowRightLeft size={13} className="text-sky" />
-              <span>Cotización {activeTrip?.countryCode === 'AR' ? 'Dólar Blue' : `${activeTrip?.baseCurrency || 'USD'} / ${activeTrip?.localCurrency || 'ARS'}`}</span>
+              <span>
+                Cotización: {baseFlag} {baseCurrency} ➔ {localFlag} {localCurrency}
+                {countryCode === 'AR' && ' (Dólar Blue)'}
+              </span>
             </div>
-            {activeTrip?.countryCode === 'AR' && (
-              <button
-                type="button"
-                className="btn-header-live-rate"
-                onClick={handleFetchLive}
-                disabled={isFetchingRate}
-                title="Consultar precio real de hoy en DolarApi.com"
-              >
-                <RefreshCw size={11} className={isFetchingRate ? 'spin-icon' : ''} />
-                <span>{isFetchingRate ? 'Consultando...' : 'En vivo'}</span>
-              </button>
-            )}
+            
+            <button
+              type="button"
+              className="btn-header-live-rate"
+              onClick={handleFetchLive}
+              disabled={isFetchingRate}
+              title={`Consultar precio en vivo de ${baseCurrency} a ${localCurrency}`}
+            >
+              <RefreshCw size={11} className={isFetchingRate ? 'spin-icon' : ''} />
+              <span>{isFetchingRate ? 'Consultando...' : 'En vivo'}</span>
+            </button>
           </div>
+
+          {rateFeedback && (
+            <div className="rate-feedback-toast animate-fade-in">
+              <span>{rateFeedback}</span>
+            </div>
+          )}
 
           <div className="currency-widget-inputs-row">
             <div className="fixed-usd-tag">
-              <span className="usd-flag">🇺🇸</span>
-              <span className="usd-text">1 {activeTrip?.baseCurrency || 'USD'}</span>
+              <span className="usd-flag">{baseFlag}</span>
+              <span className="usd-text">1 {baseCurrency}</span>
               <span className="currency-equals-sign">=</span>
             </div>
 
             <div className="currency-input-pill ars-pill">
-              <span className="pill-currency-symbol">$</span>
+              <span className="pill-currency-flag">{localFlag}</span>
+              <span className="pill-currency-symbol">{localSymbol}</span>
               <input
                 type="text"
                 inputMode="decimal"
-                value={arsInput}
-                onChange={handleArsChange}
-                onBlur={handleArsBlur}
+                value={rateInput}
+                onChange={handleRateChange}
+                onBlur={handleRateBlur}
                 onKeyDown={handleKeyDown}
-                placeholder="1540"
+                placeholder="1"
                 className="currency-input-field ars"
-                title={`Ajusta el valor en ${activeTrip?.localCurrency || 'ARS'} de 1 ${activeTrip?.baseCurrency || 'USD'}`}
-                aria-label={`${activeTrip?.localCurrency || 'ARS'} por 1 ${activeTrip?.baseCurrency || 'USD'}`}
+                title={`Ajusta el valor en ${localCurrency} de 1 ${baseCurrency}`}
+                aria-label={`${localCurrency} por 1 ${baseCurrency}`}
               />
-              <span className="pill-currency-code">{activeTrip?.localCurrency || 'ARS'}</span>
+              <span className="pill-currency-code">{localCurrency}</span>
             </div>
           </div>
 
-          {activeTrip?.countryCode === 'AR' && (
+          {countryCode === 'AR' && (
             <div className="currency-widget-presets">
               <button
                 type="button"
@@ -297,7 +319,7 @@ export default function Header({
                 onClick={() => handleQuickPreset(1540)}
                 title="Precio de compra en cuevas (cambiar USD a ARS)"
               >
-                1.540 (Compra)
+                🇦🇷 1.540 (Compra)
               </button>
               <button
                 type="button"
@@ -305,7 +327,7 @@ export default function Header({
                 onClick={() => handleQuickPreset(1560)}
                 title="Precio de venta en cuevas"
               >
-                1.560 (Venta)
+                🇦🇷 1.560 (Venta)
               </button>
             </div>
           )}

@@ -25,8 +25,8 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | **Fase 0** | **Arquitectura Base & TypeScript** | React 19 + TypeScript 100% + Desacoplamiento de Servicios y Custom Hooks | ✅ **COMPLETADO** |
 | **Fase 1** | **Modelo Multi-Viaje & Top 50 Países** | Marca TripFlow, catálogo Top 50 países, entidad `Trip`, selector y aislamiento por `tripId` | ✅ **COMPLETADO** |
 | **Fase 2** | **Multi-Usuario (AdminJools & Auth)** | Usuario `AdminJools` (clave `12345`), modal visual `AuthModal`, migración de Argentina a Admin | ✅ **COMPLETADO** |
-| **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, COP, etc.) + soporte Dólar Blue | 🟢 **EN PROGRESO** |
-| **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | ⚪ *Pendiente* |
+| **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, COP, etc.) + soporte Dólar Blue y Banderas | ✅ **COMPLETADO** |
+| **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | 🟡 **SIGUIENTE PASO** |
 | **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ⚪ *Pendiente* |
 
 ---
@@ -67,16 +67,33 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 
 ---
 
-### ⚪ Fase 3: Motor Multi-Divisa Global Dinámico
+### ✅ Fase 3: Motor Multi-Divisa Global Dinámico (Completada: Noviembre 2026)
 
 #### 🎯 Objetivo
-Soportar viajes a cualquier destino con su moneda local (EUR en Europa, JPY en Japón, GBP en Reino Unido, COP en Colombia, MXN en México, etc.) manteniendo compatibilidad especial con el Dólar Blue de Argentina.
+Transformar el motor financiero para soportar viajes a cualquier destino con su moneda local (EUR en Europa, JPY en Japón, GBP en Reino Unido, COP en Colombia, MXN en México, BRL en Brasil, etc.) manteniendo compatibilidad especial y retrocompatible con el Dólar Blue de Argentina y banderas visuales en toda la interfaz.
 
-#### 🛠️ Tareas Clave:
-1. Crear servicio de divisas `src/services/fxRatesService.ts`.
-2. Integrar API pública de tipos de cambio con caché (ej: Open Exchange Rates o ExchangeRate-API).
-3. Mantener el conector dedicado de `dolarapi.com` cuando el país sea Argentina (`country_code === 'AR'`).
-4. Generalizar los formateadores de divisas en `src/utils/helpers.ts` para aceptar cualquier símbolo y código de moneda ISO (`formatCurrency(amount, currencyCode)`).
+#### 🛠️ Especificación Detallada y Tareas Ejecutadas:
+- [x] **1. Servicio Global de Tipos de Cambio (`src/services/fxRatesService.ts`):** ✅
+  - Conector dual inteligente:
+    - Si el viaje es a Argentina (`AR`), consulta en tiempo real `dolarapi.com` (Dólar Blue compra/venta).
+    - Para los otros 50 destinos mundiales, consulta tipos de cambio internacionales en vivo (USD a EUR, JPY, GBP, COP, MXN, etc.) mediante API pública con caché en `localStorage` (evitando llamadas innecesarias y funcionando 100% offline).
+  - Almacenamiento de cotización manual por viaje para cuando el usuario cambia divisas a tasas pactadas.
+- [x] **2. Generalización de Formateadores Financieros y Banderas (`src/utils/helpers.ts`):** ✅
+  - Migración y tipado 100% TypeScript de `src/utils/helpers.ts` eliminando el archivo `.js`.
+  - Diccionario maestro `CURRENCY_REGISTRY` y `COUNTRY_FLAGS` para el Top 50 países.
+  - Implementación de `formatCurrency(amount, currencyCode, options)` basado en `Intl.NumberFormat` nativo del navegador con soporte de banderas emoji.
+  - Funciones `getCurrencyFlag(currencyCode, countryCode)` y `getCurrencySymbol(currencyCode)`.
+  - Preservación de `formatCurrencyARS()` para total retrocompatibilidad con las pantallas existentes.
+- [x] **3. Adaptación Dinámica del Header y Ticker con Banderas (`src/components/common/Header.tsx`):** ✅
+  - Widget de tipo de cambio reactivo: muestra el par con banderas `{baseFlag} 1 {baseCurrency} = {localFlag} [X] {localCurrency}`.
+  - Botón "En vivo" contextual: si el viaje es Argentina consulta Dólar Blue; si es Japón consulta JPY en tiempo real; si es Europa consulta EUR en tiempo real.
+  - Toast de confirmación en vivo (`.rate-feedback-toast`).
+  - Indicadores de presupuesto en Header adaptados a la moneda base y local del viaje activo.
+- [x] **4. Adaptación Integral de la Billetera (`src/components/wallet/`):** ✅
+  - `WalletHero.tsx`: Banderas de divisa base y local, consulta en vivo internacional, cálculo de remanente en moneda local y base.
+  - `LiquidityTracker.tsx`: Adaptación para mostrar seguimiento de efectivo en la moneda local (`localFlag` y `localCurrency`) y tarjeta frente al presupuesto.
+  - `ExpenseRow.tsx`: Badge dual con banderas (`{localFlag} {formatCurrency}` y `{baseFlag} ${USD}`).
+  - `AddExpenseForm.tsx`: Selector alternador entre moneda local con bandera (`{localFlag} En JPY`) o divisa base (`{baseFlag} En USD`) con previsualización simultánea.
 
 ---
 

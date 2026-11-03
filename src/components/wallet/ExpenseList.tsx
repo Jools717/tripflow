@@ -13,6 +13,9 @@ interface ExpenseListProps {
   onEditExpense: (exp: WalletExpenseItem) => void;
   onDeleteExpense: (id: string, exp: WalletExpenseItem) => void;
   onUpdateActivityCost?: (activityId: string, newCost: number) => void;
+  localCurrency?: string;
+  baseCurrency?: string;
+  countryCode?: string;
 }
 
 export default function ExpenseList({
@@ -24,7 +27,10 @@ export default function ExpenseList({
   onOpenReceipt,
   onEditExpense,
   onDeleteExpense,
-  onUpdateActivityCost
+  onUpdateActivityCost,
+  localCurrency = 'ARS',
+  baseCurrency = 'USD',
+  countryCode = 'AR'
 }: ExpenseListProps) {
   return (
     <div className="budget-list-column">
@@ -66,6 +72,9 @@ export default function ExpenseList({
               onEditExpense={onEditExpense}
               onDeleteExpense={onDeleteExpense}
               onUpdateActivityCost={onUpdateActivityCost}
+              localCurrency={localCurrency}
+              baseCurrency={baseCurrency}
+              countryCode={countryCode}
             />
           ))
         )}
@@ -73,4 +82,3 @@ export default function ExpenseList({
     </div>
   );
 }
-
