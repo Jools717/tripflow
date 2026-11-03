@@ -7,9 +7,21 @@ const STORAGE_KEY_ACTIVE_TRIP = 'ba_active_trip_id';
 export const loadStoredTrips = (): Trip[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_TRIPS);
-    if (!raw) return [DEFAULT_BA_TRIP];
+    if (!raw) {
+      saveStoredTrips([DEFAULT_BA_TRIP]);
+      return [DEFAULT_BA_TRIP];
+    }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Migrate: ensure each trip has a userId
+      const migrated = parsed.map((t: Trip) => {
+        if (!t.userId || t.id === 'trip-ba-2026') {
+          return { ...t, userId: 'user-admin-jools' };
+        }
+        return t;
+      });
+      return migrated;
+    }
     return [DEFAULT_BA_TRIP];
   } catch {
     return [DEFAULT_BA_TRIP];
@@ -42,7 +54,7 @@ export const saveStoredActiveTripId = (tripId: string): void => {
 
 export const tripToDb = (t: Trip) => ({
   id: t.id,
-  user_id: t.userId || null,
+  user_id: t.userId || 'user-admin-jools',
   title: t.title,
   destination_city: t.destinationCity,
   country_code: t.countryCode,
@@ -59,7 +71,7 @@ export const tripToDb = (t: Trip) => ({
 
 export const dbToTrip = (row: any): Trip => ({
   id: row.id,
-  userId: row.user_id || null,
+  userId: row.user_id || 'user-admin-jools',
   title: row.title || 'Viaje',
   destinationCity: row.destination_city || '',
   countryCode: row.country_code || 'AR',
@@ -68,7 +80,7 @@ export const dbToTrip = (row: any): Trip => ({
   endDate: row.end_date || '2026-10-23',
   baseCurrency: row.base_currency || 'USD',
   localCurrency: row.local_currency || 'ARS',
-  exchangeRate: Number(row.exchange_rate) || 1000,
+  exchangeRate: Number(row.exchange_rate) || 1540,
   budgetTotalBase: Number(row.budget_total_base) || 1000,
   isActive: Boolean(row.is_active),
   notes: row.notes || ''
@@ -83,7 +95,6 @@ export const fetchTripsDb = async (userId?: string | null): Promise<Trip[] | nul
     }
     const { data, error } = await query;
     if (error) {
-      // Table may not be created yet in user's Supabase instance
       return null;
     }
     if (Array.isArray(data) && data.length > 0) {

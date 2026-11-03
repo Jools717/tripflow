@@ -22,6 +22,8 @@ interface UseItineraryOptions {
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   setCloudSyncStatus: React.Dispatch<React.SetStateAction<SyncStatus>>;
   onNavigateToTab?: (tab: string) => void;
+  activeTripId?: string;
+  userId?: string;
 }
 
 export function useItinerary({
@@ -30,7 +32,9 @@ export function useItinerary({
   expenses,
   setExpenses,
   setCloudSyncStatus,
-  onNavigateToTab
+  onNavigateToTab,
+  activeTripId,
+  userId
 }: UseItineraryOptions) {
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [selectedMapActivity, setSelectedMapActivity] = useState<Activity | null>(null);
@@ -94,6 +98,8 @@ export function useItinerary({
         ...editingActivity,
         ...formData,
         id: editingActivity.id,
+        tripId: editingActivity.tripId || activeTripId || 'trip-ba-2026',
+        userId: editingActivity.userId || userId || 'user-admin-jools',
         dayNumber: Number(formData.dayNumber || editingActivity.dayNumber || 1),
         costEstimatedARS: cleanCost,
         type: formData.type || editingActivity.type || 'plan',
@@ -110,6 +116,8 @@ export function useItinerary({
     } else {
       const newActivity: Activity = {
         id: 'act-' + Date.now(),
+        tripId: activeTripId || 'trip-ba-2026',
+        userId: userId || 'user-admin-jools',
         dayNumber: Number(formData.dayNumber || modalDayNumber || selectedDayNumber || 1),
         time: formData.time || '10:00',
         period: formData.period || 'mañana',
@@ -136,35 +144,37 @@ export function useItinerary({
   };
 
   const handleDeleteActivity = async (id: string) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este plan del itinerario?')) return;
-    const actToDelete = activities.find(a => a.id === id);
+    const act = activities.find(a => a.id === id);
     setActivities(prev => prev.filter(a => a.id !== id));
-
-    const remainingExpenses = removeMirrorExpensesForDeletedActivity(id, actToDelete, expenses);
-    if (remainingExpenses) setExpenses(remainingExpenses);
-
     if (isSupabaseConfigured) {
       setCloudSyncStatus('saving');
       await deleteActivityDb(id);
       setCloudSyncStatus('connected');
     }
-  };
-
-  const handleMoveActivityDay = async (id: string, targetDayNumber: number) => {
-    const targetNum = Number(targetDayNumber);
-    const act = activities.find(a => a.id === id);
-    if (!act || Number(act.dayNumber) === targetNum) return;
-    setActivities(prev => prev.map(a => a.id === id ? { ...a, dayNumber: targetNum } : a));
-    if (isSupabaseConfigured) {
-      setCloudSyncStatus('saving');
-      await updateActivityFieldsDb(id, { day_number: targetNum });
-      setCloudSyncStatus('connected');
-    }
+    const cleanExpenses = removeMirrorExpensesForDeletedActivity(id, act, expenses);
+    if (cleanExpenses) setExpenses(cleanExpenses);
   };
 
   const handleSelectOnMap = (activity: Activity) => {
     setSelectedMapActivity(activity);
-    if (onNavigateToTab) onNavigateToTab('mapa');
+    if (onNavigateToTab) {
+      onNavigateToTab('mapa');
+    }
+  };
+
+  const handleMoveActivityDay = async (activityId: string, newDayNumber: number) => {
+    const act = activities.find(a => a.id === activityId);
+    if (!act) return;
+    const updated: Activity = {
+      ...act,
+      dayNumber: newDayNumber
+    };
+    setActivities(prev => prev.map(a => a.id === activityId ? updated : a));
+    if (isSupabaseConfigured) {
+      setCloudSyncStatus('saving');
+      await updateActivityFieldsDb(activityId, { day_number: newDayNumber });
+      setCloudSyncStatus('connected');
+    }
   };
 
   return {
@@ -182,7 +192,7 @@ export function useItinerary({
     handleCloseActivityModal,
     handleSaveActivity,
     handleDeleteActivity,
-    handleMoveActivityDay,
-    handleSelectOnMap
+    handleSelectOnMap,
+    handleMoveActivityDay
   };
 }

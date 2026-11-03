@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Activity } from '../types/activity';
 import { Expense, MediaReceipt } from '../types/expense';
 import { ChecklistItem, ExpenseCategory } from '../types/category';
@@ -90,7 +90,9 @@ export function useTripData(options?: UseTripDataOptions) {
     expenses,
     setExpenses,
     setCloudSyncStatus,
-    onNavigateToTab: options?.onNavigateToTab
+    onNavigateToTab: options?.onNavigateToTab,
+    activeTripId: activeTrip.id,
+    userId: auth.user?.id || 'user-admin-jools'
   });
 
   const wallet = useWallet({
@@ -103,7 +105,9 @@ export function useTripData(options?: UseTripDataOptions) {
     checklist,
     setChecklist,
     setExchangeRate,
-    setCloudSyncStatus
+    setCloudSyncStatus,
+    activeTripId: activeTrip.id,
+    userId: auth.user?.id || 'user-admin-jools'
   });
 
   // Trip Handlers
@@ -119,7 +123,7 @@ export function useTripData(options?: UseTripDataOptions) {
   const handleCreateTrip = async (newTrip: Trip) => {
     const tripWithUser: Trip = {
       ...newTrip,
-      userId: auth.user?.id || null
+      userId: auth.user?.id || 'user-admin-jools'
     };
     const nextTrips = [tripWithUser, ...trips];
     setTrips(nextTrips);
@@ -129,6 +133,10 @@ export function useTripData(options?: UseTripDataOptions) {
   };
 
   const handleDeleteTrip = async (tripId: string) => {
+    if (tripId === 'trip-ba-2026') {
+      alert('El viaje principal de Buenos Aires 2026 está protegido y no se puede eliminar.');
+      return;
+    }
     const nextTrips = trips.filter(t => t.id !== tripId);
     if (nextTrips.length === 0) return;
     setTrips(nextTrips);
@@ -139,24 +147,48 @@ export function useTripData(options?: UseTripDataOptions) {
     await deleteTripDb(tripId);
   };
 
-  const untrackedItineraryARS = activities
+  // Filtered collections by active trip
+  const activeActivities = useMemo(() => {
+    return activities.filter(a => (a.tripId || 'trip-ba-2026') === activeTrip.id);
+  }, [activities, activeTrip.id]);
+
+  const activeExpenses = useMemo(() => {
+    return expenses.filter(e => (e.tripId || 'trip-ba-2026') === activeTrip.id);
+  }, [expenses, activeTrip.id]);
+
+  const activeChecklist = useMemo(() => {
+    return checklist.filter(c => (c.tripId || 'trip-ba-2026') === activeTrip.id);
+  }, [checklist, activeTrip.id]);
+
+  const activeCategories = useMemo(() => {
+    return categories.filter(c => (c.tripId || 'trip-ba-2026') === activeTrip.id);
+  }, [categories, activeTrip.id]);
+
+  const activeReceipts = useMemo(() => {
+    return receipts.filter(r => (r.tripId || 'trip-ba-2026') === activeTrip.id);
+  }, [receipts, activeTrip.id]);
+
+  // Metrics on active trip
+  const untrackedItineraryARS = activeActivities
     .filter((a) => {
       const cost = parseCurrencyNumber(a.costEstimatedARS) || 0;
-      return cost > 0 && !isActivityTrackedInExpenses(a, expenses);
+      return cost > 0 && !isActivityTrackedInExpenses(a, activeExpenses);
     })
     .reduce((sum, a) => sum + (parseCurrencyNumber(a.costEstimatedARS) || 0), 0);
 
-  const totalExpensesARS = expenses.reduce((sum, e) => sum + (parseCurrencyNumber(e.amountARS) || 0), 0);
+  const totalExpensesARS = activeExpenses.reduce((sum, e) => sum + (parseCurrencyNumber(e.amountARS) || 0), 0);
   const totalSpentARS = untrackedItineraryARS + totalExpensesARS;
-  const completedActivitiesCount = activities.filter((a) => a.completed).length;
+  const completedActivitiesCount = activeActivities.filter((a) => a.completed).length;
 
   return {
-    // Entities
-    activities,
-    expenses,
-    categories,
-    receipts,
-    checklist,
+    // Entities for Active Trip
+    activities: activeActivities,
+    allActivities: activities,
+    expenses: activeExpenses,
+    allExpenses: expenses,
+    categories: activeCategories.length > 0 ? activeCategories : categories,
+    receipts: activeReceipts,
+    checklist: activeChecklist.length > 0 ? activeChecklist : checklist,
     exchangeRate,
     cloudSyncStatus,
 

@@ -32,6 +32,8 @@ interface UseWalletOptions {
   setChecklist: React.Dispatch<React.SetStateAction<ChecklistItem[]>>;
   setExchangeRate: React.Dispatch<React.SetStateAction<number>>;
   setCloudSyncStatus: React.Dispatch<React.SetStateAction<SyncStatus>>;
+  activeTripId?: string;
+  userId?: string;
 }
 
 export function useWallet({
@@ -44,12 +46,29 @@ export function useWallet({
   checklist,
   setChecklist,
   setExchangeRate,
-  setCloudSyncStatus
+  setCloudSyncStatus,
+  activeTripId,
+  userId
 }: UseWalletOptions) {
   const handleAddExpense = async (expense: Expense, mediaItem?: MediaReceipt) => {
     const cost = Math.max(0, parseCurrencyNumber(expense.amountARS) || 0);
-    setExpenses(prev => [expense, ...prev]);
-    if (mediaItem) setReceipts(prev => [mediaItem, ...prev]);
+    const expenseWithTrip: Expense = {
+      ...expense,
+      tripId: expense.tripId || activeTripId || 'trip-ba-2026',
+      userId: expense.userId || userId || 'user-admin-jools'
+    };
+
+    setExpenses(prev => [expenseWithTrip, ...prev]);
+    
+    let mediaWithTrip: MediaReceipt | undefined;
+    if (mediaItem) {
+      mediaWithTrip = {
+        ...mediaItem,
+        tripId: mediaItem.tripId || activeTripId || 'trip-ba-2026',
+        userId: mediaItem.userId || userId || 'user-admin-jools'
+      };
+      setReceipts(prev => [mediaWithTrip!, ...prev]);
+    }
 
     const actId = expense.activityId || activities.find(a => isActivityTrackedInExpenses(a, [expense]))?.id;
     if (actId) {
@@ -61,7 +80,7 @@ export function useWallet({
 
     if (isSupabaseConfigured) {
       setCloudSyncStatus('saving');
-      await insertExpenseDb(expense, mediaItem);
+      await insertExpenseDb(expenseWithTrip, mediaWithTrip);
       setCloudSyncStatus('connected');
     }
   };
@@ -118,10 +137,15 @@ export function useWallet({
   };
 
   const handleAddCategory = async (newCat: ExpenseCategory) => {
-    setCategories(prev => [...prev, newCat]);
+    const catWithTrip: ExpenseCategory = {
+      ...newCat,
+      tripId: newCat.tripId || activeTripId || 'trip-ba-2026',
+      userId: newCat.userId || userId || 'user-admin-jools'
+    };
+    setCategories(prev => [...prev, catWithTrip]);
     if (isSupabaseConfigured) {
       setCloudSyncStatus('saving');
-      await insertCategoryDb(newCat);
+      await insertCategoryDb(catWithTrip);
       setCloudSyncStatus('connected');
     }
   };
@@ -148,10 +172,15 @@ export function useWallet({
   };
 
   const handleAddChecklist = async (item: ChecklistItem) => {
-    setChecklist(prev => [item, ...prev]);
+    const itemWithTrip: ChecklistItem = {
+      ...item,
+      tripId: item.tripId || activeTripId || 'trip-ba-2026',
+      userId: item.userId || userId || 'user-admin-jools'
+    };
+    setChecklist(prev => [itemWithTrip, ...prev]);
     if (isSupabaseConfigured) {
       setCloudSyncStatus('saving');
-      await insertChecklistDb(item);
+      await insertChecklistDb(itemWithTrip);
       setCloudSyncStatus('connected');
     }
   };
@@ -167,7 +196,7 @@ export function useWallet({
 
   const handleUpdateExchangeRate = async (rate: number | string) => {
     const validRate = Number(rate);
-    if (!validRate || isNaN(validRate) || validRate < 100) return;
+    if (!validRate || isNaN(validRate) || validRate < 0.01) return;
     setExchangeRate(validRate);
     if (isSupabaseConfigured) {
       setCloudSyncStatus('saving');

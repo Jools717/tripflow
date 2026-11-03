@@ -23,9 +23,9 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | Fase | Nombre | Alcance Principal | Estado |
 |---|---|---|---|
 | **Fase 0** | **Arquitectura Base & TypeScript** | React 19 + TypeScript 100% + Desacoplamiento de Servicios y Custom Hooks | ✅ **COMPLETADO** |
-| **Fase 1** | **Modelo de Datos Multi-Viaje & UI** | Entidad `Trip`, selector de viajes en Header, creador de viajes y retrocompatibilidad | 🟢 **EN PROGRESO (UI & Modelos Listos)** |
-| **Fase 2** | **Multi-Usuario (Auth & RLS)** | Supabase Auth (Google/Email), modal visual `AuthModal`, aislamiento por `user_id` | 🟢 **EN PROGRESO (Modal & Hooks Listos)** |
-| **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, etc.) + soporte Dólar Blue | ⚪ *Pendiente* |
+| **Fase 1** | **Modelo Multi-Viaje & Top 50 Países** | Marca TripFlow, catálogo Top 50 países, entidad `Trip`, selector y aislamiento por `tripId` | ✅ **COMPLETADO** |
+| **Fase 2** | **Multi-Usuario (AdminJools & Auth)** | Usuario `AdminJools` (clave `12345`), modal visual `AuthModal`, migración de Argentina a Admin | ✅ **COMPLETADO** |
+| **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, COP, etc.) + soporte Dólar Blue | 🟢 **EN PROGRESO** |
 | **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | ⚪ *Pendiente* |
 | **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ⚪ *Pendiente* |
 
@@ -46,64 +46,24 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 
 ---
 
-### 🟡 Fase 1: Abstracción de Datos y Modelo Multi-Viaje (En Curso)
-
-#### 🎯 Objetivo
-Transformar las tablas y el estado para que todas las actividades, gastos, categorías y listas de chequeo pertenezcan a un `trip_id` específico, **garantizando que el viaje actual de Buenos Aires 2026 continúe funcionando sin interrupciones**.
-
-#### 📐 Especificación Técnica de Base de Datos (Supabase)
-Nueva tabla: `trips`
-```sql
-CREATE TABLE trips (
-  id TEXT PRIMARY KEY,
-  user_id TEXT, -- Preparado para Fase 2
-  title TEXT NOT NULL,
-  destination_city TEXT NOT NULL,
-  country_code TEXT NOT NULL, -- Ej: 'AR', 'JP', 'FR', 'US'
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
-  base_currency TEXT NOT NULL DEFAULT 'USD',
-  local_currency TEXT NOT NULL DEFAULT 'ARS',
-  exchange_rate NUMERIC NOT NULL DEFAULT 1000,
-  budget_total_base NUMERIC DEFAULT 1000,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-#### 🔄 Migración de Tablas Existentes:
-* Agregar columna `trip_id TEXT REFERENCES trips(id)` a:
-  - `activities`
-  - `expenses`
-  - `categories`
-  - `checklists`
-  - `receipts`
-* **Migración de retrocompatibilidad:** Crear el registro `trip-ba-2026` e insertar dicho `trip_id` en todas las filas existentes de Argentina.
-
-#### 🛠️ Tareas de Implementación Frontend:
-1. Crear interface `Trip` en `src/types/trip.ts`.
-2. Actualizar interfaces en `src/types/` para incluir `tripId?: string`.
-3. Crear `src/services/tripService.ts` con CRUD de viajes.
-4. Adaptar `src/services/activityService.ts`, `expenseService.ts`, etc., para filtrar por `trip_id`.
-5. Modificar `useTripData(tripId?: string)` para recibir el ID del viaje activo.
+### ✅ Fase 1: Marca TripFlow, Modelo Multi-Viaje y Top 50 Países (Completada: Noviembre 2026)
+* **Objetivo:** Rebranding global provisional a **TripFlow**, creación del catálogo oficial del Top 50 de países del mundo y aislamiento de datos por `trip_id`.
+* **Logros alcanzados:**
+  - Adopción de la identidad **TripFlow** en `package.json`, `index.html`, `public/manifest.json` y Header.
+  - Creación de `GLOBAL_DESTINATIONS` con 51 países mundiales (América, Europa, Asia, Oceanía y África) con sus banderas, monedas oficiales (`JPY`, `EUR`, `USD`, `GBP`, `COP`, `MXN`, etc.), ciudades clave y tasas de cambio aproximadas.
+  - Buscador inteligente en `CreateTripModal.tsx` para filtrar instantáneamente entre los 51 países por nombre o ciudad.
+  - Aislamiento de datos en `useTripData.ts`: cada viaje tiene su propio conjunto activo de actividades y gastos.
+  - Protección y retrocompatibilidad del 100% para el viaje original a **Buenos Aires 2026** (`trip-ba-2026`).
 
 ---
 
-### ⚪ Fase 2: Autenticación Multi-Usuario y Seguridad RLS
-
-#### 🎯 Objetivo
-Permitir que múltiples personas creen sus propias cuentas y que los datos de un usuario sean estrictamente inaccesibles para los demás.
-
-#### 🛠️ Tareas Clave:
-1. **Supabase Auth:**
-   - Habilitar autenticación por Google OAuth y Magic Link (o correo/contraseña).
-   - Componente de autenticación modal/pantalla (`src/components/auth/AuthModal.tsx`).
-2. **Row Level Security (RLS) en PostgreSQL:**
-   - Activar RLS en todas las tablas.
-   - Políticas: `auth.uid() = user_id`.
-3. **Estado de Sesión en Frontend:**
-   - Custom hook `useAuth()` para detectar sesión activa, login, logout y usuario actual.
-   - Modo "Invitado / Offline" temporal para no obligar a registrarse antes de probar.
+### ✅ Fase 2: Autenticación, Usuario AdminJools y Migración de Datos (Completada: Noviembre 2026)
+* **Objetivo:** Crear el usuario administrador **AdminJools** (clave `12345`), habilitar inicio de sesión local y en la nube, y migrar toda la información histórica de Argentina a su propiedad.
+* **Logros alcanzados:**
+  - Perfil oficial de administrador creado: `AdminJools` (`adminjools@tripflow.app`, rol `admin`).
+  - Autenticación por credenciales (`AdminJools` / `12345`) en `src/services/authService.ts` y botón de acceso rápido de 1 clic en `AuthModal.tsx`.
+  - Migración automática de datos en `src/services/storageService.ts`: todas las actividades, gastos, checklist y categorías del viaje original a Buenos Aires ahora pertenecen explícitamente a `userId: 'user-admin-jools'` y `tripId: 'trip-ba-2026'`.
+  - Soporte integrado de Supabase Auth (Google OAuth y Magic Link) como métodos alternativos.
 
 ---
 

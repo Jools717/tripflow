@@ -127,12 +127,14 @@ export default function App() {
         isOpen={trip.isCreateTripOpen}
         onClose={() => trip.setIsCreateTripOpen(false)}
         onCreateTrip={trip.handleCreateTrip}
+        currentUserId={trip.auth.user?.id || 'user-admin-jools'}
       />
 
       <AuthModal
         isOpen={trip.isAuthModalOpen}
         onClose={() => trip.setIsAuthModalOpen(false)}
         user={trip.auth.user}
+        onSignInCredentials={trip.auth.signInWithCredentials}
         onSignInGoogle={trip.auth.signInWithGoogle}
         onSignInOtp={trip.auth.signInWithOtp}
         onSignOut={trip.auth.signOut}

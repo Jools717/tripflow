@@ -17,7 +17,8 @@ const STORAGE_KEYS = [
   'ba_itinerary_receipts',
   'ba_itinerary_exchange_rate',
   'ba_user_trips',
-  'ba_active_trip_id'
+  'ba_active_trip_id',
+  'tripflow_current_user'
 ];
 
 /**
@@ -100,51 +101,107 @@ export const loadStoredActivities = (): Activity[] => {
   try {
     const saved = localStorage.getItem('ba_itinerary_activities');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
+      const parsed: Activity[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(a => ({
+          ...a,
+          tripId: a.tripId || 'trip-ba-2026',
+          userId: a.userId || 'user-admin-jools'
+        }));
+      }
     }
   } catch {}
-  return INITIAL_ACTIVITIES;
+  return INITIAL_ACTIVITIES.map(a => ({
+    ...a,
+    tripId: 'trip-ba-2026',
+    userId: 'user-admin-jools'
+  }));
 };
 
 export const loadStoredExpenses = (): Expense[] => {
   try {
     const saved = localStorage.getItem('ba_itinerary_expenses');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
+      const parsed: Expense[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(e => ({
+          ...e,
+          tripId: e.tripId || 'trip-ba-2026',
+          userId: e.userId || 'user-admin-jools'
+        }));
+      }
     }
   } catch {}
-  return INITIAL_EXPENSES;
+  return INITIAL_EXPENSES.map(e => ({
+    ...e,
+    tripId: 'trip-ba-2026',
+    userId: 'user-admin-jools'
+  }));
 };
 
 export const loadStoredChecklist = (): ChecklistItem[] => {
   try {
     const saved = localStorage.getItem('ba_itinerary_checklist');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
+      const parsed: ChecklistItem[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(c => ({
+          ...c,
+          tripId: c.tripId || 'trip-ba-2026',
+          userId: c.userId || 'user-admin-jools'
+        }));
+      }
     }
   } catch {}
-  return INITIAL_CHECKLIST;
+  return INITIAL_CHECKLIST.map(c => ({
+    ...c,
+    tripId: 'trip-ba-2026',
+    userId: 'user-admin-jools'
+  }));
 };
 
 export const loadStoredCategories = (): ExpenseCategory[] => {
   try {
     const saved = localStorage.getItem('ba_itinerary_categories');
-    return saved ? JSON.parse(saved) : DEFAULT_EXPENSE_CATEGORIES;
+    if (saved) {
+      const parsed: ExpenseCategory[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(cat => ({
+          ...cat,
+          tripId: cat.tripId || 'trip-ba-2026',
+          userId: cat.userId || 'user-admin-jools'
+        }));
+      }
+    }
+    return DEFAULT_EXPENSE_CATEGORIES.map(cat => ({
+      ...cat,
+      tripId: 'trip-ba-2026',
+      userId: 'user-admin-jools'
+    }));
   } catch {
-    return DEFAULT_EXPENSE_CATEGORIES;
+    return DEFAULT_EXPENSE_CATEGORIES.map(cat => ({
+      ...cat,
+      tripId: 'trip-ba-2026',
+      userId: 'user-admin-jools'
+    }));
   }
 };
 
 export const loadStoredReceipts = (): MediaReceipt[] => {
   try {
     const saved = localStorage.getItem('ba_itinerary_receipts');
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
+    if (saved) {
+      const parsed: MediaReceipt[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(r => ({
+          ...r,
+          tripId: r.tripId || 'trip-ba-2026',
+          userId: r.userId || 'user-admin-jools'
+        }));
+      }
+    }
+  } catch {}
+  return [];
 };
 
 export const loadStoredExchangeRate = (): number => {
@@ -153,5 +210,5 @@ export const loadStoredExchangeRate = (): number => {
     const parsed = Number(saved);
     if (parsed && parsed >= 100) return parsed;
   } catch {}
-  return TRIP_INFO.defaultExchangeRateUSD || 1520;
+  return TRIP_INFO.defaultExchangeRateUSD || 1540;
 };

@@ -10130,3 +10130,158 @@ body {
   color: #166534;
   line-height: 1.35;
 }
+
+
+/* ==========================================================================
+   TRIPFLOW BRANDING & TOP 50 SEARCH & ADMINJOOLS AUTH STYLES
+   ========================================================================== */
+
+.brand-title-flow-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.brand-app-name {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-dot-separator {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+/* Country Search in CreateTripModal */
+.country-search-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.country-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+}
+
+.country-search-icon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.country-search-input {
+  width: 100%;
+  padding: 6px 12px 6px 30px;
+  font-size: 0.82rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 99px;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.country-search-input:focus {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+/* Admin Auth & Quick Login */
+.btn-quick-admin-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  color: #166534;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 14px;
+}
+
+.btn-quick-admin-login:hover {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.auth-nav-tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.auth-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.auth-credentials-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.header-auth-btn.admin {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}

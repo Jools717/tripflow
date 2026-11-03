@@ -164,11 +164,15 @@ export default function Header({
                 </span>
               )}
             </div>
-            <h1 className="brand-title">{activeTrip?.title ? `Mi Itinerario: ${activeTrip.destinationCity}` : 'Mi Itinerario Porteño'}</h1>
+            <div className="brand-title-flow-row">
+              <span className="brand-app-name">TripFlow</span>
+              <span className="brand-dot-separator">•</span>
+              <h1 className="brand-title">{activeTrip?.destinationCity ? `${activeTrip.destinationCity}` : 'Buenos Aires'}</h1>
+            </div>
             <p className="brand-subtitle">
               {activeTrip 
-                ? `${activeTrip.startDate} al ${activeTrip.endDate} • ${activeTrip.destinationCity}` 
-                : 'Sábado 10 al Viernes 23 de Octubre • Casa de mi amiga'}
+                ? `${activeTrip.startDate} al ${activeTrip.endDate} • ${activeTrip.flagEmoji || '✈️'} ${activeTrip.title}` 
+                : '10 al 23 de Octubre • 🇦🇷 Buenos Aires 2026'}
             </p>
           </div>
         </div>

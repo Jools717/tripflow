@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import { X, Plane, Calendar, DollarSign, MapPin, Sparkles } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, Plane, Calendar, DollarSign, MapPin, Sparkles, Search } from 'lucide-react';
 import { Trip, GLOBAL_DESTINATIONS } from '../../types/trip';
 
 interface CreateTripModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateTrip: (trip: Trip) => void;
+  currentUserId?: string | null;
 }
 
 export default function CreateTripModal({
   isOpen,
   onClose,
-  onCreateTrip
+  onCreateTrip,
+  currentUserId
 }: CreateTripModalProps) {
+  const [countrySearch, setCountrySearch] = useState('');
   const [selectedCountryCode, setSelectedCountryCode] = useState('JP');
   const [city, setCity] = useState('Tokio');
   const [title, setTitle] = useState('Aventura en Tokio');
@@ -22,6 +25,16 @@ export default function CreateTripModal({
   const baseCurrency = 'USD';
   const [localCurrency, setLocalCurrency] = useState('JPY');
   const [approxRate, setApproxRate] = useState('155');
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return GLOBAL_DESTINATIONS;
+    const query = countrySearch.toLowerCase().trim();
+    return GLOBAL_DESTINATIONS.filter(c => 
+      c.name.toLowerCase().includes(query) || 
+      c.code.toLowerCase().includes(query) ||
+      c.suggestedCities.some(city => city.toLowerCase().includes(query))
+    );
+  }, [countrySearch]);
 
   if (!isOpen) return null;
 
@@ -33,13 +46,7 @@ export default function CreateTripModal({
       setCity(defaultCity);
       setTitle(`Viaje a ${defaultCity}`);
       setLocalCurrency(country.defaultCurrency);
-      if (country.defaultCurrency === 'JPY') setApproxRate('155');
-      else if (country.defaultCurrency === 'EUR') setApproxRate('0.92');
-      else if (country.defaultCurrency === 'GBP') setApproxRate('0.79');
-      else if (country.defaultCurrency === 'ARS') setApproxRate('1280');
-      else if (country.defaultCurrency === 'COP') setApproxRate('4100');
-      else if (country.defaultCurrency === 'MXN') setApproxRate('19.5');
-      else setApproxRate('1');
+      setApproxRate(country.approxRateUSD.toString());
     }
   };
 
@@ -49,6 +56,7 @@ export default function CreateTripModal({
 
     const newTrip: Trip = {
       id: 'trip-' + Date.now(),
+      userId: currentUserId || 'user-admin-jools',
       title: title.trim() || `Viaje a ${city}`,
       destinationCity: city.trim() || 'Destino',
       countryCode: selectedCountryCode,
@@ -78,7 +86,7 @@ export default function CreateTripModal({
             </div>
             <div>
               <h3>Crear Nuevo Viaje</h3>
-              <p>Configura tu destino, fechas y presupuesto de forma inteligente</p>
+              <p>Top 50 países con moneda y configuración inteligente</p>
             </div>
           </div>
 
@@ -95,18 +103,32 @@ export default function CreateTripModal({
         {/* Body */}
         <form onSubmit={handleSubmit} className="create-trip-form">
           
-          {/* Country Selection Chips */}
+          {/* Country Selection with Search */}
           <div className="form-group">
-            <label className="form-label">
-              <span>Selecciona tu País de Destino:</span>
-            </label>
+            <div className="country-search-header-row">
+              <label className="form-label mb-0">
+                <span>Selecciona tu País ({GLOBAL_DESTINATIONS.length} disponibles):</span>
+              </label>
+              <div className="country-search-input-wrapper">
+                <Search size={14} className="country-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Buscar país o ciudad..."
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  className="country-search-input"
+                />
+              </div>
+            </div>
+
             <div className="country-chips-grid">
-              {GLOBAL_DESTINATIONS.map(c => (
+              {filteredCountries.map(c => (
                 <button
                   key={c.code}
                   type="button"
                   className={`country-chip-btn ${selectedCountryCode === c.code ? 'active' : ''}`}
                   onClick={() => handleCountryChange(c.code)}
+                  title={`${c.name} • Moneda: ${c.defaultCurrency}`}
                 >
                   <span className="chip-flag">{c.flag}</span>
                   <span className="chip-name">{c.name}</span>
@@ -126,7 +148,7 @@ export default function CreateTripModal({
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Ej: Tokio, París, Bariloche"
+                placeholder="Ej: Tokio, París, Madrid"
                 className="form-input"
                 required
               />
@@ -212,7 +234,7 @@ export default function CreateTripModal({
 
             <div className="form-group">
               <label className="form-label">
-                <span>Cotización aprox:</span>
+                <span>Cotización x 1 {baseCurrency}:</span>
               </label>
               <input
                 type="number"

@@ -10,6 +10,8 @@ export interface PurchaseItem {
 
 export interface Activity {
   id: string;
+  tripId?: string;
+  userId?: string;
   dayNumber: number;
   time: string;
   period: ActivityPeriod | string;
@@ -27,4 +29,3 @@ export interface Activity {
   completed: boolean;
   costEstimatedARS: number;
 }
-

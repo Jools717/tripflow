@@ -1,5 +1,7 @@
 export interface ExpenseCategory {
   id: string;
+  tripId?: string;
+  userId?: string;
   name: string;
   icon: string;
   color: string;
@@ -8,8 +10,9 @@ export interface ExpenseCategory {
 
 export interface ChecklistItem {
   id: string;
+  tripId?: string;
+  userId?: string;
   text: string;
   category: string;
   completed: boolean;
 }
-

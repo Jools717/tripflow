@@ -1,7 +1,7 @@
 {
-  "short_name": "BA 2026",
-  "name": "Itinerario Buenos Aires 2026",
-  "description": "Itinerario interactivo, mapas, transporte y gastos para viaje a Buenos Aires",
+  "short_name": "TripFlow",
+  "name": "TripFlow - Smart Travel Planner",
+  "description": "Planificador inteligente de viajes, itinerarios interactivos y control de gastos para viajeros del mundo.",
   "icons": [
     {
       "src": "/icon-192.svg",

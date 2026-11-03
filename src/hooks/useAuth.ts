@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserProfile } from '../types/user';
 import {
   getCurrentUser,
+  signInWithCredentials as authSignInCredentials,
   signInWithGoogle,
   signInWithOtp,
   signOut as authSignOut,
@@ -47,6 +48,18 @@ export function useAuth() {
     setIsGuest(true);
   };
 
+  const handleSignInWithCredentials = async (identifier: string, pass: string) => {
+    setIsLoading(true);
+    const result = await authSignInCredentials(identifier, pass);
+    if (result.user) {
+      setUser(result.user);
+      setIsGuest(false);
+      localStorage.removeItem('ba_auth_guest');
+    }
+    setIsLoading(false);
+    return result;
+  };
+
   const handleSignOut = async () => {
     await authSignOut();
     setUser(null);
@@ -58,6 +71,7 @@ export function useAuth() {
     user,
     isLoading,
     isGuest,
+    signInWithCredentials: handleSignInWithCredentials,
     signInWithGoogle,
     signInWithOtp,
     signOut: handleSignOut,

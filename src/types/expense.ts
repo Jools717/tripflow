@@ -13,6 +13,8 @@ export interface ReceiptItem {
 
 export interface Expense {
   id: string;
+  tripId?: string;
+  userId?: string;
   date: string;
   time?: string;
   concept: string;
@@ -31,6 +33,8 @@ export interface Expense {
 
 export interface MediaReceipt {
   uuid: string;
+  tripId?: string;
+  userId?: string;
   filename: string;
   description?: string;
   extension?: string;
@@ -38,4 +42,3 @@ export interface MediaReceipt {
   content_base64: string;
   items?: ReceiptItem[];
 }
-
