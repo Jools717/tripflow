@@ -1,17 +1,28 @@
-// Datos reales del viaje a Buenos Aires (10 al 23 de Octubre de 2026)
+// Datos del viaje y generador dinámico de días para cualquier destino del mundo
+import { Trip } from '../types/trip';
+
+export interface DayInfo {
+  dayNumber: number;
+  date: string;
+  dateFormatted: string;
+  barrioPrincipal: string;
+  badgeColor: string;
+  summary: string;
+  isDepartureDay: boolean;
+}
 
 export const TRIP_INFO = {
   destination: "Buenos Aires, Argentina",
   arrivalDate: "2026-10-10T05:30:00",
   departureDate: "2026-10-23T15:30:00",
   hostNote: "Control de gastos y registro en tiempo real del viaje en Buenos Aires.",
-  defaultExchangeRateUSD: 1520 // Tasa pactada inicial
+  defaultExchangeRateUSD: 1540
 };
 
 export const CASH_EXCHANGE_INFO = {
   initialUSDChanged: 0,
   totalArsAgreed: 0,
-  effectiveRate: 1520,
+  effectiveRate: 1540,
   cashDeliveries: [],
   totalCashReceived: 0,
   cashPending: 0
@@ -24,7 +35,7 @@ export const SUBE_STATUS_INFO = {
   note: ""
 };
 
-export const INITIAL_DAYS = [
+export const INITIAL_DAYS: DayInfo[] = [
   {
     dayNumber: 1,
     date: "2026-10-10",
@@ -84,7 +95,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-16",
     dateFormatted: "Viernes 16 de Octubre",
     barrioPrincipal: "Día 7",
-    badgeColor: "#fb7185",
+    badgeColor: "#fb923c",
     summary: "Planes del Día 7",
     isDepartureDay: false
   },
@@ -93,7 +104,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-17",
     dateFormatted: "Sábado 17 de Octubre",
     barrioPrincipal: "Día 8",
-    badgeColor: "#38bdf8",
+    badgeColor: "#2dd4bf",
     summary: "Planes del Día 8",
     isDepartureDay: false
   },
@@ -102,7 +113,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-18",
     dateFormatted: "Domingo 18 de Octubre",
     barrioPrincipal: "Día 9",
-    badgeColor: "#fbbf24",
+    badgeColor: "#38bdf8",
     summary: "Planes del Día 9",
     isDepartureDay: false
   },
@@ -111,7 +122,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-19",
     dateFormatted: "Lunes 19 de Octubre",
     barrioPrincipal: "Día 10",
-    badgeColor: "#818cf8",
+    badgeColor: "#fbbf24",
     summary: "Planes del Día 10",
     isDepartureDay: false
   },
@@ -120,7 +131,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-20",
     dateFormatted: "Martes 20 de Octubre",
     barrioPrincipal: "Día 11",
-    badgeColor: "#34d399",
+    badgeColor: "#818cf8",
     summary: "Planes del Día 11",
     isDepartureDay: false
   },
@@ -129,7 +140,7 @@ export const INITIAL_DAYS = [
     date: "2026-10-21",
     dateFormatted: "Miércoles 21 de Octubre",
     barrioPrincipal: "Día 12",
-    badgeColor: "#f472b6",
+    badgeColor: "#34d399",
     summary: "Planes del Día 12",
     isDepartureDay: false
   },
@@ -153,12 +164,53 @@ export const INITIAL_DAYS = [
   }
 ];
 
-// Base de datos limpia: Inicializada en vacío para recibir los nuevos planes y gastos
-export const INITIAL_ACTIVITIES = [];
+export const generateTripDays = (trip?: Trip): DayInfo[] => {
+  if (!trip || trip.id === 'trip-ba-2026') {
+    return INITIAL_DAYS;
+  }
 
-export const INITIAL_EXPENSES = [];
+  try {
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
 
-export const INITIAL_CHECKLIST = [];
+    const colors = ['#38bdf8', '#fbbf24', '#818cf8', '#34d399', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf'];
+    const days: DayInfo[] = [];
+
+    for (let i = 0; i < diffDays; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const isoDate = d.toISOString().split('T')[0];
+      const dayNum = i + 1;
+      const isLast = i === diffDays - 1;
+
+      const dateFormatted = d.toLocaleDateString('es-ES', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+      });
+
+      days.push({
+        dayNumber: dayNum,
+        date: isoDate,
+        dateFormatted: `Día ${dayNum} · ${dateFormatted}`,
+        barrioPrincipal: isLast ? `${trip.destinationCity} • Regreso` : `Día ${dayNum} en ${trip.destinationCity}`,
+        badgeColor: colors[i % colors.length],
+        summary: isLast ? 'Día de cierre del viaje y despedida.' : `Planes en ${trip.destinationCity}`,
+        isDepartureDay: isLast
+      });
+    }
+
+    return days;
+  } catch {
+    return INITIAL_DAYS;
+  }
+};
+
+export const INITIAL_ACTIVITIES: any[] = [];
+export const INITIAL_EXPENSES: any[] = [];
+export const INITIAL_CHECKLIST: any[] = [];
 
 export const EXPENSE_CATEGORIES = [
   { id: "gastronomia", name: "Restaurantes & Bares", icon: "Utensils", color: "#f59e0b" },
@@ -213,3 +265,4 @@ export const SURVIVAL_TIPS = [
     badge: "Gastronomía"
   }
 ];
+

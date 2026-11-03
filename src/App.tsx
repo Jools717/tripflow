@@ -6,10 +6,11 @@ import MapView from './components/MapView';
 import BudgetTracker from './components/wallet/BudgetTracker';
 import SurvivalGuide from './components/SurvivalGuide';
 import ChecklistView from './components/ChecklistView';
+import TripsDashboard from './components/trips/TripsDashboard';
 import ActivityModal from './components/modals/ActivityModal';
 import AuthModal from './components/auth/AuthModal';
 import TripSelectorModal from './components/trips/TripSelectorModal';
-import CreateTripModal from './components/trips/CreateTripModal';
+import CreateTripWizard from './components/trips/CreateTripWizard';
 import UpdateModal from './components/updates/UpdateModal';
 import UpdateBannerPill from './components/updates/UpdateBannerPill';
 import { useTripData } from './hooks/useTripData';
@@ -44,6 +45,20 @@ export default function App() {
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="main-content-container">
+        {activeTab === 'viajes' && (
+          <TripsDashboard
+            trips={trip.trips}
+            activeTripId={trip.activeTripId}
+            onSelectTrip={trip.handleSelectTrip}
+            onOpenCreateWizard={() => trip.setIsCreateTripOpen(true)}
+            onDeleteTrip={trip.handleDeleteTrip}
+            onNavigateToTab={setActiveTab}
+            allActivities={trip.allActivities}
+            allExpenses={trip.allExpenses}
+            user={trip.auth.user}
+          />
+        )}
+
         {activeTab === 'itinerario' && (
           <ItineraryView
             activities={trip.activities}
@@ -57,6 +72,7 @@ export default function App() {
             selectedDayNumber={trip.selectedDayNumber}
             setSelectedDayNumber={trip.setSelectedDayNumber}
             onMoveActivityDay={trip.handleMoveActivityDay}
+            activeTrip={trip.activeTrip}
           />
         )}
 
@@ -104,7 +120,7 @@ export default function App() {
         onUpdateApp={appUpdate.handleOpenBackgroundUpdateModal}
       />
 
-      {/* Modals */}
+      {/* Modals & Wizards */}
       <ActivityModal
         isOpen={trip.isActivityModalOpen}
         onClose={trip.handleCloseActivityModal}
@@ -124,10 +140,13 @@ export default function App() {
         onDeleteTrip={trip.handleDeleteTrip}
       />
 
-      <CreateTripModal
+      <CreateTripWizard
         isOpen={trip.isCreateTripOpen}
         onClose={() => trip.setIsCreateTripOpen(false)}
-        onCreateTrip={trip.handleCreateTrip}
+        onCreateTrip={(newTrip) => {
+          trip.handleCreateTrip(newTrip);
+          setActiveTab('itinerario');
+        }}
         currentUserId={trip.auth.user?.id || 'user-admin-jools'}
       />
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarDays, MapPin, Wallet, Compass, CheckSquare } from 'lucide-react';
+import { Plane, CalendarDays, MapPin, Wallet, Compass, CheckSquare } from 'lucide-react';
 
 interface NavigationProps {
   activeTab: string;
@@ -8,10 +8,11 @@ interface NavigationProps {
 
 export default function Navigation({ activeTab, setActiveTab }: NavigationProps) {
   const tabs = [
-    { id: 'itinerario', label: 'Itinerario', icon: CalendarDays, badge: '14 Días' },
-    { id: 'mapa', label: 'Mapa & Rutas', icon: MapPin, badge: 'Pines' },
-    { id: 'gastos', label: 'Billetera & Compras', icon: Wallet, badge: 'Hub $1k' },
-    { id: 'tips', label: 'Tips & SUBE', icon: Compass, badge: 'Guía' },
+    { id: 'viajes', label: 'Mis Viajes', icon: Plane, badge: 'Hub' },
+    { id: 'itinerario', label: 'Itinerario', icon: CalendarDays, badge: 'Días' },
+    { id: 'mapa', label: 'Mapa', icon: MapPin, badge: 'Pines' },
+    { id: 'gastos', label: 'Billetera', icon: Wallet, badge: 'Hub' },
+    { id: 'tips', label: 'Guía', icon: Compass, badge: 'Tips' },
     { id: 'checklist', label: 'Checklist', icon: CheckSquare, badge: 'Equipaje' },
   ];
 
@@ -40,4 +41,3 @@ export default function Navigation({ activeTab, setActiveTab }: NavigationProps)
     </nav>
   );
 }
-

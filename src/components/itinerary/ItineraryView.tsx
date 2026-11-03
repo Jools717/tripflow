@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle, Plus, Kanban } from 'lucide-react';
 import { Activity } from '../../types/activity';
-import { INITIAL_DAYS } from '../../data/initialData';
+import { Trip } from '../../types/trip';
+import { generateTripDays } from '../../data/initialData';
 import KanbanBoard from './KanbanBoard';
 import TimelineView from './TimelineView';
 import QuickMoveModal from './QuickMoveModal';
@@ -19,6 +20,7 @@ interface ItineraryViewProps {
   selectedDayNumber: number;
   setSelectedDayNumber: (dayNum: number) => void;
   onMoveActivityDay?: (actId: string, targetDayNum: number) => void;
+  activeTrip?: Trip;
 }
 
 export default function ItineraryView({
@@ -32,7 +34,8 @@ export default function ItineraryView({
   onSelectOnMap,
   selectedDayNumber,
   setSelectedDayNumber,
-  onMoveActivityDay
+  onMoveActivityDay,
+  activeTrip
 }: ItineraryViewProps) {
   const [viewMode, setViewMode] = useState<'kanban' | 'timeline'>('kanban');
   const [filterFriend, setFilterFriend] = useState<'all' | 'withFriend' | 'solo'>('all');
@@ -50,7 +53,8 @@ export default function ItineraryView({
     return true;
   };
 
-  const visibleDays = INITIAL_DAYS.filter(d => {
+  const allTripDays = generateTripDays(activeTrip);
+  const visibleDays = allTripDays.filter(d => {
     if (kanbanWeek === 'week1') return d.dayNumber <= 7;
     if (kanbanWeek === 'week2') return d.dayNumber >= 8;
     return true;
@@ -198,6 +202,7 @@ export default function ItineraryView({
       {viewMode === 'timeline' && (
         <TimelineView
           activities={activities}
+          days={allTripDays}
           selectedDayNumber={selectedDayNumber}
           setSelectedDayNumber={setSelectedDayNumber}
           filterPeriod={filterPeriod}

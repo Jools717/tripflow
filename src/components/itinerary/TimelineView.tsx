@@ -1,12 +1,13 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, AlertTriangle, Coffee, Plus } from 'lucide-react';
 import { Activity } from '../../types/activity';
-import { INITIAL_DAYS } from '../../data/initialData';
+import { DayInfo, INITIAL_DAYS } from '../../data/initialData';
 import { formatCurrencyARS, formatCurrencyUSD } from '../../utils/helpers';
 import TimelineCard from './TimelineCard';
 
 interface TimelineViewProps {
   activities: Activity[];
+  days?: DayInfo[];
   selectedDayNumber: number;
   setSelectedDayNumber: (dayNum: number) => void;
   filterPeriod: string;
@@ -24,6 +25,7 @@ interface TimelineViewProps {
 
 export default function TimelineView({
   activities,
+  days = INITIAL_DAYS,
   selectedDayNumber,
   setSelectedDayNumber,
   filterPeriod,
@@ -38,7 +40,7 @@ export default function TimelineView({
   onEdit,
   onDelete
 }: TimelineViewProps) {
-  const currentTimelineDay = INITIAL_DAYS.find(d => d.dayNumber === selectedDayNumber) || INITIAL_DAYS[0];
+  const currentTimelineDay = days.find(d => d.dayNumber === selectedDayNumber) || days[0];
   const dayActivities = activities.filter(a => a.dayNumber === selectedDayNumber);
   const filteredTimelineActivities = dayActivities.filter(filterActivityItem);
   const completedInDay = dayActivities.filter(a => a.completed).length;
