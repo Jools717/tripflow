@@ -70,6 +70,7 @@ export function useTripData(options?: UseTripDataOptions) {
   }, [auth.user]);
 
   const { cloudSyncStatus, setCloudSyncStatus } = useTripSync({
+    activeTripId: activeTrip.id,
     activities,
     setActivities,
     expenses,

@@ -20,6 +20,8 @@ export interface Expense {
   concept: string;
   category: string;
   amountARS: number;
+  currency?: string;
+  amountUSD?: number;
   paymentMethod: PaymentMethod;
   paidBy: string;
   note?: string;

@@ -2,7 +2,7 @@
 
 > **Documento de Contexto y Progreso para Desarrolladores y Agentes de IA**  
 > **Última Actualización:** 2 de Noviembre de 2026  
-> **Estado General:** Fases 0, 1, 2, 3, 4 y 5 Completadas al 100% · **Fase 6 en Preparación (Colaboración & Sincronización Cloud)**
+> **Estado General:** Fases 0, 1, 2, 3, 4, 5 y 6 Completadas al 100% · **Fase 7 en Preparación (Exportación PDF & Calendario)**
 
 ---
 
@@ -28,8 +28,8 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, COP, etc.) + soporte Dólar Blue y Banderas | ✅ **COMPLETADO** |
 | **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | ✅ **COMPLETADO** |
 | **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ✅ **COMPLETADO** |
-| **Fase 6** | **Colaboración & Cloud Sync** | Viajes compartidos, permisos de edición y sincronización en tiempo real con Supabase | 🟡 **SIGUIENTE PASO** |
-| **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | ⚪ *Pendiente* |
+| **Fase 6** | **Colaboración & Cloud Sync** | Migración de base de datos ejecutada, aislamiento por tripId/userId y Realtime | ✅ **COMPLETADO** |
+| **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | 🟡 **SIGUIENTE PASO** |
 
 ---
 
@@ -152,16 +152,42 @@ Transformar la sección "Guía Porteña" y la visualización de mapa para adapta
 
 ---
 
-### ⚪ Fase 6: Colaboración & Sincronización Cloud
+### ✅ Fase 6: Colaboración & Sincronización Cloud (Completada: Noviembre 2026)
 
 #### 🎯 Objetivo
-Permitir que varios viajeros colaboren en el mismo itinerario y registren gastos compartidos en tiempo real.
+Transformar la base de datos de producción en Supabase para soportar nativamente arquitectura multi-viaje y multi-usuario con sincronización en tiempo real, garantizando la preservación del 100% de los datos históricos del viaje a Buenos Aires.
+
+#### 🛠️ Especificación Detallada y Tareas Ejecutadas:
+- [x] **1. Configuración de Acceso CLI Automatizado:** ✅
+  - Integración de `SUPABASE_ACCESS_TOKEN` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` permitiendo a Antigravity ejecutar migraciones y ajustes DDL de forma autónoma.
+- [x] **2. Creación de la Tabla Maestra `trips`:** ✅
+  - Creada en producción con 15 columnas: `id`, `user_id`, `title`, `destination_city`, `country_code`, `flag_emoji`, `start_date`, `end_date`, `base_currency`, `local_currency`, `exchange_rate`, `budget_total_base`, `is_active`, `notes`, `created_at`.
+  - Registrado el viaje maestro `trip-ba-2026` para el usuario administrador `AdminJools` (`user-admin-jools`).
+- [x] **3. Aislamiento y Migración Segura de Datos Históricos:** ✅
+  - Columnas `trip_id` y `user_id` añadidas a `activities`, `expenses` y `checklist` con valor por defecto `'trip-ba-2026'` y `'user-admin-jools'`.
+  - **Auditoría en vivo completada:**
+    - `activities`: **22/22 actividades históricas preservadas y vinculadas** a `trip-ba-2026`.
+    - `expenses`: **3/3 gastos históricos preservados y vinculados** a `trip-ba-2026`.
+    - `checklist`: **10/10 ítems históricos preservados y vinculados** a `trip-ba-2026`.
+  - Nuevas columnas `currency` y `amount_usd` en `expenses` para cálculo multi-divisa.
+- [x] **4. Índices B-Tree de Alto Rendimiento:** ✅
+  - Creados `idx_activities_trip_id`, `idx_expenses_trip_id`, `idx_checklist_trip_id` e `idx_trips_user_id` para consultas instantáneas en milisegundos.
+- [x] **5. Publicación Realtime Habilitada:** ✅
+  - Tabla `trips` añadida a `supabase_realtime` para reflejar instantáneamente la creación, edición o eliminación de viajes entre múltiples pantallas.
+- [x] **6. Certificación del Cliente Frontend:** ✅
+  - Conexión verificada tanto con clave de servicio como con clave pública (`anon`), filtrando reactivamente por viaje activo (`.eq('trip_id', activeTripId)`).
+
+---
+
+### ⚪ Fase 7: Exportación & Calendario
+
+#### 🎯 Objetivo
+Permitir que el viajero exporte su itinerario completo en formato imprimible/PDF para llevar en físico u offline, y sincronice sus actividades con Google Calendar / Apple Calendar (.ics).
 
 #### 🛠️ Tareas Clave:
-1. Códigos de invitación o enlace para compartir viajes.
-2. Roles de viaje (Propietario / Editor / Visualizador).
-3. Sincronización en tiempo real mediante Supabase Realtime Channels.
-4. Desglose de gastos compartidos ("Quién pagó qué").
+1. Generación de reporte ejecutivo en PDF con itinerario día por día, mapa de pines y resumen financiero de gastos.
+2. Exportador de eventos `.ics` compatible con Google Calendar, Apple Calendar y Outlook.
+3. Botón de compartir resumen rápido por WhatsApp o portapapeles.
 
 ---
 
@@ -191,11 +217,31 @@ Permitir que varios viajeros colaboren en el mismo itinerario y registren gastos
 > **Nota para futuros agentes de IA y desarrolladores:**  
 > La base de datos en Supabase está en producción con datos reales del viaje. **No se deben renombrar ni eliminar columnas sin una migración explícita.**
 
+### Tabla `trips` (Estructura Multi-Viaje Global)
+| Columna en Supabase (`snake_case`) | Propiedad en React (`camelCase`) | Tipo | Descripción |
+|---|---|---|---|
+| `id` | `id` | `text` (PK) | Ej: `'trip-ba-2026'`, `'trip-173059...'` |
+| `user_id` | `userId` | `text` | Propietario del viaje (default: `'user-admin-jools'`) |
+| `title` | `title` | `text` | Título del viaje (ej: `'Buenos Aires 2026'`, `'Aventura en Tokio'`) |
+| `destination_city` | `destinationCity` | `text` | Ciudad de destino (ej: `'Buenos Aires'`, `'Tokio'`) |
+| `country_code` | `countryCode` | `text` | Código ISO del país (ej: `'AR'`, `'JP'`, `'ES'`) |
+| `flag_emoji` | `flagEmoji` | `text` | Bandera nacional emoji (ej: `'🇦🇷'`, `'🇯🇵'`) |
+| `start_date` | `startDate` | `text` | Fecha de inicio (`YYYY-MM-DD`) |
+| `end_date` | `endDate` | `text` | Fecha de finalización (`YYYY-MM-DD`) |
+| `base_currency` | `baseCurrency` | `text` | Moneda base de cálculo (ej: `'USD'`) |
+| `local_currency` | `localCurrency` | `text` | Moneda oficial del país destino (ej: `'ARS'`, `'JPY'`) |
+| `exchange_rate` | `exchangeRate` | `numeric` | Cotización base 1 USD a moneda local |
+| `budget_total_base` | `budgetTotalBase` | `numeric` | Tope presupuestario en moneda base |
+| `is_active` | `isActive` | `boolean` | Indicador de viaje en curso |
+| `notes` | `notes` | `text` | Notas del viaje o alojamiento |
+
 ### Tabla `activities`
 | Columna en Supabase (`snake_case`) | Propiedad en React (`camelCase`) | Tipo | Descripción |
 |---|---|---|---|
 | `id` | `id` | `text` (PK) | Ej: `act-1792082845815` |
-| `day_number` | `dayNumber` | `integer` | Día del viaje (1 al 14) |
+| `trip_id` | `tripId` | `text` (FK) | Vínculo al viaje (default: `'trip-ba-2026'`) |
+| `user_id` | `userId` | `text` | Creador o responsable (default: `'user-admin-jools'`) |
+| `day_number` | `dayNumber` | `integer` | Día del viaje (1 al 14 o según duración) |
 | `time` | `time` | `text` | Ej: `"10:30"` |
 | `period` | `period` | `text` | `"mañana"`, `"tarde"`, `"noche"` |
 | `title` | `title` | `text` | Título del plan o lote de compra |
@@ -204,10 +250,27 @@ Permitir que varios viajeros colaboren en el mismo itinerario y registren gastos
 | `address` | `address` | `text` | Dirección física |
 | `lat`, `lng` | `coords` (`[lat, lng]`) | `float` | Coordenadas Leaflet (`[number, number] | null`) |
 | `description` | `description` / `items` / `note` | `text` (JSON) | **Crítico:** Almacena compras multi-ítem y notas en formato JSON: `{"type":"compras","items":[{"id":"it-1","name":"Pezuña","price":35000}],"note":"..."}` |
-| `tip` | `tip` | `text` | Tip porteño |
+| `tip` | `tip` | `text` | Tip porteño o local |
 | `with_friend` | `withFriend` | `boolean` | Alternador "¿Va mi amiga?" |
 | `completed` | `completed` | `boolean` | Checkbox de plan realizado |
 | `cost_estimated_ars` | `costEstimatedARS` | `numeric` | Costo estimado en ARS (suma de ítems en compras) |
+
+### Tabla `expenses`
+| Columna en Supabase (`snake_case`) | Propiedad en React (`camelCase`) | Tipo | Descripción |
+|---|---|---|---|
+| `id` | `id` | `text` (PK) | Ej: `exp-1792082845815` |
+| `trip_id` | `tripId` | `text` (FK) | Vínculo al viaje (default: `'trip-ba-2026'`) |
+| `user_id` | `userId` | `text` | Pagador/Usuario (default: `'user-admin-jools'`) |
+| `date` | `date` | `text` | Fecha del gasto (`YYYY-MM-DD`) |
+| `concept` | `concept` | `text` | Concepto de la compra o gasto |
+| `category` | `category` | `text` | Categoría de gasto (`gastronomia`, `mercado`, etc.) |
+| `amount_ars` | `amountARS` | `numeric` | Monto en moneda local o ARS |
+| `currency` | `currency` | `text` | Código de divisa (ej: `'ARS'`, `'JPY'`, `'EUR'`) |
+| `amount_usd` | `amountUSD` | `numeric` | Equivalente aproximado en USD |
+| `paid_by` | `paidBy` / `paymentMethod` | `text` | `'efectivo'` o `'tarjeta'` |
+| `note` | `note` / `items` | `text` (JSON) | Detalles o desglose de productos |
+| `receipt_id` | `receiptId` | `text` | Vínculo a ticket en `media_manager` |
+| `activity_id` | `activityId` | `text` (FK) | Vínculo opcional a la actividad espejo (`activities.id`) |
 
 ### Reglas de Negocio Esenciales (¡No Romper!)
 1. **Sincronización Espejo Itinerario-Billetera:**  

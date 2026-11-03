@@ -24,7 +24,7 @@ export const expenseToDb = (exp: Expense): DbExpenseRow => {
       note: exp.note || ''
     });
   }
-  return {
+  const result: DbExpenseRow = {
     id: exp.id,
     date: exp.date,
     concept: exp.concept,
@@ -34,6 +34,13 @@ export const expenseToDb = (exp: Expense): DbExpenseRow => {
     note: dbNote,
     receipt_id: exp.receipt_id || exp.receiptId || null
   };
+
+  if (exp.tripId) result.trip_id = exp.tripId;
+  if (exp.userId) result.user_id = exp.userId;
+  if (exp.currency) result.currency = exp.currency;
+  if (exp.activityId) result.activity_id = exp.activityId;
+
+  return result;
 };
 
 export const dbToExpense = (row: DbExpenseRow): Expense => {
@@ -54,15 +61,21 @@ export const dbToExpense = (row: DbExpenseRow): Expense => {
 
   return {
     id: row.id,
+    tripId: row.trip_id || 'trip-ba-2026',
+    userId: row.user_id || 'user-admin-jools',
     date: row.date,
     concept: row.concept,
     category: row.category,
     amountARS: Number(row.amount_ars) || 0,
+    currency: row.currency || 'ARS',
+    amountUSD: Number(row.amount_usd) || 0,
     paymentMethod: (row.paid_by?.toLowerCase() === 'tarjeta' || row.note?.toLowerCase().includes('tarjeta')) ? 'tarjeta' : 'efectivo',
     paidBy: row.paid_by || 'Efectivo',
     note: parsedNote,
     type: parsedType,
     items: parsedItems,
+    activityId: row.activity_id || null,
+    isFromItinerary: Boolean(row.activity_id),
     receipt_id: row.receipt_id || null
   };
 };

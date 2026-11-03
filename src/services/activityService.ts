@@ -11,7 +11,7 @@ export const activityToDb = (act: Activity): DbActivityRow => {
       note: act.note || act.description || ''
     });
   }
-  return {
+  const result: DbActivityRow = {
     id: act.id,
     day_number: act.dayNumber,
     time: act.time || '10:00',
@@ -28,6 +28,11 @@ export const activityToDb = (act: Activity): DbActivityRow => {
     completed: Boolean(act.completed),
     cost_estimated_ars: Number(act.costEstimatedARS) || 0
   };
+
+  if (act.tripId) result.trip_id = act.tripId;
+  if (act.userId) result.user_id = act.userId;
+
+  return result;
 };
 
 export const dbToActivity = (row: DbActivityRow): Activity => {
@@ -52,6 +57,8 @@ export const dbToActivity = (row: DbActivityRow): Activity => {
 
   return {
     id: row.id,
+    tripId: row.trip_id || 'trip-ba-2026',
+    userId: row.user_id || 'user-admin-jools',
     dayNumber: Number(row.day_number),
     time: row.time || '10:00',
     period: row.period || 'mañana',

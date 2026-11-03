@@ -8,6 +8,7 @@ import { ChecklistItem, ExpenseCategory } from '../types/category';
 import { SyncStatus } from '../types/supabase';
 
 interface UseTripSyncOptions {
+  activeTripId?: string;
   activities: Activity[];
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
   expenses: Expense[];
@@ -23,6 +24,7 @@ interface UseTripSyncOptions {
 }
 
 export function useTripSync({
+  activeTripId,
   activities,
   setActivities,
   expenses,
@@ -101,7 +103,7 @@ export function useTripSync({
     }, 3500);
 
     setCloudSyncStatus('syncing');
-    fetchInitialSupabaseData()
+    fetchInitialSupabaseData(activeTripId)
       .then((data) => {
         if (!isMounted) return;
         if (data.activities) setActivities(data.activities);

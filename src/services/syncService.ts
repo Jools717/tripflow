@@ -14,7 +14,7 @@ export interface InitialSupabaseData {
   receipts?: MediaReceipt[];
 }
 
-export const fetchInitialSupabaseData = async (): Promise<InitialSupabaseData> => {
+export const fetchInitialSupabaseData = async (activeTripId?: string): Promise<InitialSupabaseData> => {
   if (!isSupabaseConfigured || !supabase) return {};
 
   const [actRes, expRes, chkRes, setRes, catRes, recRes] = await Promise.allSettled([
@@ -29,13 +29,16 @@ export const fetchInitialSupabaseData = async (): Promise<InitialSupabaseData> =
   const result: InitialSupabaseData = {};
 
   if (actRes.status === 'fulfilled' && !actRes.value.error && actRes.value.data) {
-    result.activities = actRes.value.data.map(dbToActivity);
+    const all = actRes.value.data.map(dbToActivity);
+    result.activities = activeTripId ? all.filter(a => (a.tripId || 'trip-ba-2026') === activeTripId) : all;
   }
   if (expRes.status === 'fulfilled' && !expRes.value.error && expRes.value.data) {
-    result.expenses = expRes.value.data.map(dbToExpense);
+    const all = expRes.value.data.map(dbToExpense);
+    result.expenses = activeTripId ? all.filter(e => (e.tripId || 'trip-ba-2026') === activeTripId) : all;
   }
   if (chkRes.status === 'fulfilled' && !chkRes.value.error && chkRes.value.data) {
-    result.checklist = chkRes.value.data.map(dbToChecklist);
+    const all = chkRes.value.data.map(dbToChecklist);
+    result.checklist = activeTripId ? all.filter((c: any) => (!c.tripId || c.tripId === 'trip-ba-2026' || c.tripId === activeTripId)) : all;
   }
   if (setRes.status === 'fulfilled' && !setRes.value.error && setRes.value.data?.exchange_rate) {
     result.exchangeRate = Number(setRes.value.data.exchange_rate);
