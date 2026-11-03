@@ -81,6 +81,7 @@ export default function App() {
             activities={trip.activities}
             selectedActivity={trip.selectedMapActivity}
             onSelectActivity={trip.setSelectedMapActivity}
+            activeTrip={trip.activeTrip}
           />
         )}
 
@@ -102,7 +103,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'tips' && <SurvivalGuide />}
+        {activeTab === 'tips' && <SurvivalGuide activeTrip={trip.activeTrip} />}
 
         {activeTab === 'checklist' && (
           <ChecklistView

@@ -2,7 +2,7 @@
 
 > **Documento de Contexto y Progreso para Desarrolladores y Agentes de IA**  
 > **Última Actualización:** 2 de Noviembre de 2026  
-> **Estado General:** Fases 0, 1, 2, 3 y 4 Completadas al 100% · **Fase 5 en Preparación (Guías y Mapas Dinámicos)**
+> **Estado General:** Fases 0, 1, 2, 3, 4 y 5 Completadas al 100% · **Fase 6 en Preparación (Colaboración & Sincronización Cloud)**
 
 ---
 
@@ -27,7 +27,9 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | **Fase 2** | **Multi-Usuario (AdminJools & Auth)** | Usuario `AdminJools` (clave `12345`), modal visual `AuthModal`, migración de Argentina a Admin | ✅ **COMPLETADO** |
 | **Fase 3** | **Motor Multi-Divisa Global** | Cotizaciones dinámicas mundiales (USD, EUR, JPY, COP, etc.) + soporte Dólar Blue y Banderas | ✅ **COMPLETADO** |
 | **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | ✅ **COMPLETADO** |
-| **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | 🟡 **SIGUIENTE PASO** |
+| **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ✅ **COMPLETADO** |
+| **Fase 6** | **Colaboración & Cloud Sync** | Viajes compartidos, permisos de edición y sincronización en tiempo real con Supabase | 🟡 **SIGUIENTE PASO** |
+| **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | ⚪ *Pendiente* |
 
 ---
 
@@ -124,19 +126,42 @@ Una pantalla principal limpia y moderna ("Mis Viajes") donde el usuario gestiona
 
 ---
 
-### ⚪ Fase 5: Guías de Destino y Mapas Dinámicos
+### ✅ Fase 5: Guías de Destino y Mapas Dinámicos (Completada: Noviembre 2026)
 
 #### 🎯 Objetivo
-Adaptar la sección de "Guía Porteña" y el mapa a cualquier ciudad del mundo.
+Transformar la sección "Guía Porteña" y la visualización de mapa para adaptarse dinámicamente a cualquier país o ciudad del mundo seleccionada por el viajero, manteniendo intacta toda la información especializada de Buenos Aires (Subte, SUBE, Dólar Blue).
+
+#### 🛠️ Especificación Detallada y Tareas Ejecutadas:
+- [x] **1. Centrado Dinámico y Días Adaptables en el Mapa (`src/components/MapView.tsx`):** ✅
+  - Registro de coordenadas de ciudades y países en `src/data/cityCoordinates.ts` para los 51 destinos del catálogo mundial.
+  - Al abrir un viaje (ej. Tokio, Madrid, Nueva York, Medellín o Buenos Aires), el mapa de Leaflet se inicializa centrado automáticamente en las coordenadas de la ciudad de destino.
+  - El filtro por día se alimenta de forma reactiva de `generateTripDays(activeTrip)` mostrando la cantidad exacta de días del viaje activo en lugar de estar fijado a 14 días.
+  - Banner informativo contextual (`.map-empty-destination-notice`) cuando un viaje aún no tiene coordenadas guardadas.
+  - Enlaces de "¿Cómo llegar?" y leyendas de transporte público adaptadas a la ciudad activa.
+- [x] **2. Catálogo Modular de Guías de Destino (`src/data/destinationGuides.ts` y `src/types/guide.ts`):** ✅
+  - Fichas minuciosamente detalladas para destinos principales (Argentina, Japón, España, Estados Unidos, Reino Unido) y generador algorítmico universal con estándares de la UE, América y Asia para los 51 países.
+  - Conservación al 100% de la información histórica de Buenos Aires (Líneas de Subte A, B, C, D, E, H, tarjeta SUBE, Red SUBE, Dólar MEP y Dólar Blue).
+- [x] **3. Microcomponentes Atómicos de Guía (<250 líneas por archivo):** ✅
+  - `src/components/guide/EmergencyCard.tsx`: Tarjetas de emergencia locales (911, 112, 110, 107, etc.) con enlace telefónico directo de llamada en 1 toque (`tel:...`).
+  - `src/components/guide/TransitGuideCard.tsx`: Tipos de tarjeta de transporte (Suica, OMNY, Multi, SUBE, Contactless), métodos de recarga y visualización de líneas de metro destacadas con sus colores oficiales.
+  - `src/components/guide/PlugsAndMoneyCard.tsx`: Tipos de enchufe (A, B, C, F, G, I), voltaje, frecuencia, política estricta de propinas (ej: alerta de falta de respeto en Japón vs. 18-22% obligatoria en EE.UU.) y balance de tarjeta vs. efectivo.
+  - `src/components/guide/CityTipsList.tsx`: Catálogo de aplicaciones móviles indispensables y consejos locales clasificados por categorías.
+- [x] **4. Explorador Global de Guías (`src/components/SurvivalGuide.tsx`):** ✅
+  - Cabecera con bandera emoji de gran formato, lema del destino y badge que destaca si es el destino del viaje en curso.
+  - Selector reactivo para explorar guías de cualquiera de los 51 países del Top 50 en cualquier momento sin perder el contexto del viaje activo.
+
+---
+
+### ⚪ Fase 6: Colaboración & Sincronización Cloud
+
+#### 🎯 Objetivo
+Permitir que varios viajeros colaboren en el mismo itinerario y registren gastos compartidos en tiempo real.
 
 #### 🛠️ Tareas Clave:
-1. Guías modulares por país:
-   - Teléfonos de emergencia locales (911, 112, etc.).
-   - Tarjetas y sistemas de transporte público recomendados.
-   - Consejos de enchufes y propinas.
-2. Centrado inteligente de mapa Leaflet:
-   - Al seleccionar un viaje a Tokio, el mapa se inicializa en Tokio.
-   - Búsqueda de lugares o geocodificación automática para nuevos pines.
+1. Códigos de invitación o enlace para compartir viajes.
+2. Roles de viaje (Propietario / Editor / Visualizador).
+3. Sincronización en tiempo real mediante Supabase Realtime Channels.
+4. Desglose de gastos compartidos ("Quién pagó qué").
 
 ---
 

@@ -1,23 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
-import { Calendar, Filter } from 'lucide-react';
+import { Calendar, Filter, MapPin, Compass } from 'lucide-react';
 import { Activity } from '../types/activity';
-import { INITIAL_DAYS } from '../data/initialData';
+import { Trip } from '../types/trip';
+import { INITIAL_DAYS, generateTripDays } from '../data/initialData';
 import { getGoogleMapsTransitUrl, getCategoryBadge } from '../utils/helpers';
+import { getDestinationCoordinates } from '../data/cityCoordinates';
 
 interface MapViewProps {
   activities: Activity[];
   selectedActivity?: Activity | null;
   onSelectActivity?: (activity: Activity | null) => void;
+  activeTrip?: Trip | null;
 }
 
-export default function MapView({ activities, selectedActivity }: MapViewProps) {
+export default function MapView({ activities, selectedActivity, activeTrip }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [filterDay, setFilterDay] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+
+  const destinationCoords = useMemo(() => {
+    return getDestinationCoordinates(activeTrip?.destinationCity, activeTrip?.countryCode);
+  }, [activeTrip?.destinationCity, activeTrip?.countryCode]);
+
+  const days = useMemo(() => {
+    if (activeTrip) {
+      return generateTripDays(activeTrip);
+    }
+    return INITIAL_DAYS;
+  }, [activeTrip]);
 
   const validActivities = activities.filter(a => a.coords && Array.isArray(a.coords) && a.coords.length === 2);
 
@@ -33,7 +47,7 @@ export default function MapView({ activities, selectedActivity }: MapViewProps) 
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [-34.6037, -58.3816],
+        center: destinationCoords,
         zoom: 13,
         zoomControl: true,
         scrollWheelZoom: true
@@ -55,6 +69,14 @@ export default function MapView({ activities, selectedActivity }: MapViewProps) 
       }
     };
   }, []);
+
+  // Update center when activeTrip destination coordinates change
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (filteredPlaces.length === 0) {
+      mapInstanceRef.current.setView(destinationCoords, 13);
+    }
+  }, [destinationCoords, filteredPlaces.length]);
 
   // Update Markers when filters or activities change
   useEffect(() => {
@@ -135,8 +157,8 @@ export default function MapView({ activities, selectedActivity }: MapViewProps) 
               onChange={(e) => setFilterDay(e.target.value)}
               className="map-filter-select"
             >
-              <option value="all">Todos los días (14 Días)</option>
-              {INITIAL_DAYS.map(d => (
+              <option value="all">Todos los días ({days.length} Días)</option>
+              {days.map(d => (
                 <option key={d.dayNumber} value={d.dayNumber}>
                   Día {d.dayNumber}: {d.barrioPrincipal}
                 </option>
@@ -158,18 +180,29 @@ export default function MapView({ activities, selectedActivity }: MapViewProps) 
               <option value="gastronomia">Gastronomía & Bares</option>
               <option value="cultura">Cultura & Monumentos</option>
               <option value="naturaleza">Parques & Naturaleza</option>
-              <option value="vida_nocturna">Vida Nocturna & Tango</option>
-              <option value="compras">Compras & Alfajores</option>
+              <option value="vida_nocturna">Vida Nocturna & Fiestas</option>
+              <option value="compras">Compras & Tiendas</option>
               <option value="transporte">Transporte & Llegadas</option>
             </select>
           </div>
 
           <div className="map-quick-count">
-            <strong>{filteredPlaces.length}</strong> puntos marcados
+            <MapPin size={14} className="text-sky" />
+            <span><strong>{filteredPlaces.length}</strong> puntos marcados</span>
           </div>
 
         </div>
       </div>
+
+      {/* Destination Location Info Banner */}
+      {filteredPlaces.length === 0 && (
+        <div className="map-empty-destination-notice">
+          <Compass size={16} className="text-sky" />
+          <span>
+            Centrado en <strong>{activeTrip?.flagEmoji || '🌍'} {activeTrip?.destinationCity || 'tu destino'}</strong>. Al agregar planes con dirección en el Itinerario se marcarán automáticamente con su pin aquí.
+          </span>
+        </div>
+      )}
 
       {/* Map Container */}
       <div className="map-canvas-wrapper">
@@ -180,7 +213,8 @@ export default function MapView({ activities, selectedActivity }: MapViewProps) 
       <div className="map-transit-legend">
         <p>
           💡 <strong>Tip de navegación:</strong> Toca cualquier marcador para ver detalles y presiona 
-          <strong> "¿Cómo llegar?"</strong> para que tu celular abra la app de <strong>Google Maps</strong> con la combinación óptima de <strong>Subte o Colectivo</strong> desde tu ubicación actual.
+          <strong> "¿Cómo llegar?"</strong> para abrir <strong>Google Maps</strong> con las rutas óptimas de 
+          <strong> transporte público</strong> en {activeTrip?.destinationCity || 'tu destino'} desde tu ubicación actual.
         </p>
       </div>
 

@@ -10995,3 +10995,743 @@ body {
 .btn-submit-wizard {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
 }
+
+
+/* ==========================================================================
+   FASE 5: GUÍAS DE DESTINO Y MAPAS DINÁMICOS
+   ========================================================================== */
+
+.map-empty-destination-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.map-quick-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Survival Guide Container */
+.survival-guide-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+/* Hero Banner */
+.survival-hero-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 20px;
+  padding: 20px;
+  color: #ffffff;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.survival-hero-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.hero-flag-display {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hero-flag-emoji {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.hero-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+}
+
+.guide-active-trip-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.guide-hero-city-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.guide-hero-description {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Destination Switcher */
+.guide-destination-switcher-bar {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.switcher-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.switcher-select-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+.guide-country-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guide-country-select:focus {
+  border-color: #38bdf8;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.guide-country-select option {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+/* Core Guide Modules Layout */
+.guide-modules-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.guide-card-header {
+  margin-bottom: 14px;
+}
+
+.guide-card-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guide-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.guide-card-subtitle {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+}
+
+/* Emergency Card */
+.guide-emergency-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #fee2e2;
+  box-shadow: 0 4px 15px -3px rgba(239, 68, 68, 0.06);
+}
+
+.emergency-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fef2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emergency-numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.emergency-number-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fafaf9;
+  border: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.emergency-number-item:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.emergency-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.emergency-item-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.emergency-item-desc {
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.emergency-call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ef4444;
+  color: #ffffff !important;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+  transition: transform 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.emergency-call-btn:hover {
+  background: #dc2626;
+  transform: scale(1.04);
+}
+
+.emergency-tip-banner {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+/* Transit Card */
+.guide-transit-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #e0f2fe;
+  box-shadow: 0 4px 15px -3px rgba(14, 165, 233, 0.06);
+}
+
+.transit-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f0f9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.transit-pass-highlight-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.transit-pass-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pass-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #0284c7;
+  font-size: 0.95rem;
+}
+
+.transit-type-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.transit-pass-description {
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0 0 12px 0;
+}
+
+.transit-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.transit-detail-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.detail-text {
+  font-size: 0.78rem;
+  color: #1e293b;
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Metro Lines Section */
+.guide-metro-lines-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.metro-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.metro-section-title h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+}
+
+.metro-lines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.metro-line-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+}
+
+.line-circle-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.line-text-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.line-name {
+  font-size: 0.78rem;
+  color: #0f172a;
+}
+
+.line-route {
+  font-size: 0.7rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Plugs & Money Split Grid */
+.guide-split-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.guide-card-box {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.guide-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.box-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.box-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.box-subtitle {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.plug-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.plug-pill-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.voltage-meta-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.voltage-meta-item {
+  display: flex;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+
+.meta-label {
+  color: #64748b;
+}
+
+.meta-value {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.plug-advice-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  padding: 8px 10px;
+  border-radius: 8px;
+  line-height: 1.35;
+}
+
+.tipping-highlight-box {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.tipping-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #065f46;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tipping-text {
+  font-size: 0.8rem;
+  color: #047857;
+  margin: 0;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.card-cash-split {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.split-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #475569;
+}
+
+.split-item strong {
+  color: #1e293b;
+  display: block;
+}
+
+.split-item p {
+  margin: 1px 0 0 0;
+}
+
+/* Apps & Tips Section */
+.guide-tips-and-apps-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.guide-apps-box,
+.guide-custom-tips-box {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.guide-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.guide-app-card {
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.guide-app-card:hover {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.app-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.app-name-strong {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.app-category-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  text-transform: capitalize;
+}
+
+.app-desc-text {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.tips-box-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.tips-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tip-filter-btn {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tip-filter-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.custom-tips-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.custom-tip-card {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+}
+
+.tip-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tip-badge-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.tip-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.tip-content {
+  font-size: 0.76rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
