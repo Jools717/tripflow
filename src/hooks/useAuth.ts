@@ -5,6 +5,7 @@ import {
   signUpWithEmail,
   signInWithEmail,
   signInWithGoogle,
+  signInAsGuest,
   resendConfirmationEmail,
   requestPasswordReset,
   updatePassword,
@@ -52,7 +53,10 @@ export function useAuth() {
   const handleSignOut = async (): Promise<boolean> => {
     await flushOutbox().catch(() => undefined);
     const pending = getPendingCount();
-    if (pending > 0) {
+    if (user?.role === 'guest') {
+      const ok = window.confirm('Estás como invitado: al cerrar sesión no podrás volver a ver estos viajes.\n\n¿Cerrar sesión de todas formas?');
+      if (!ok) return false;
+    } else if (pending > 0) {
       const ok = window.confirm(
         `Tienes ${pending} cambio(s) sin enviar a la nube porque no hay conexión. Si cierras sesión ahora se perderán.\n\n¿Cerrar sesión de todas formas?`
       );
@@ -73,6 +77,7 @@ export function useAuth() {
       withUser(await signUpWithEmail(name, email, password)),
     signInWithEmail: async (email: string, password: string) => withUser(await signInWithEmail(email, password)),
     signInWithGoogle,
+    signInAsGuest: async () => withUser(await signInAsGuest()),
     resendConfirmationEmail,
     requestPasswordReset,
     updatePassword,

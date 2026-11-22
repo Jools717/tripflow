@@ -31,7 +31,9 @@ Datos de prueba: usar ids/títulos con prefijo `zz` y borrarlos al terminar. `ch
 ## Autenticación (Fase 8 en curso, ver ROADMAP)
 - Supabase Auth: correo + contraseña (con confirmación) y Google. `src/services/authService.ts` / `src/hooks/useAuth.ts`; UI en `src/components/auth/`.
 - **AdminJools es una cuenta real** de Supabase Auth (id `26d4da6c-536c-4ed3-91af-62e1f11a28f8`, rol `admin` en `app_metadata`) y es dueña del viaje de Buenos Aires. El antiguo acceso local "12345" ya no existe. `OWNER_USER_ID` / `resolveOwnerId()` en `src/types/user.ts` son el dueño por defecto mientras la app se pueda usar sin sesión (hasta la Fase 8.3); no volver a escribir `'user-admin-jools'`.
-- Hasta el paso 8.4, las políticas RLS siguen abiertas: no hay aislamiento real entre usuarios.
+- **RLS por usuario activo** (`supabase/migrations/20261122_rls_por_usuario.sql`): cada fila pertenece a `user_id = auth.uid()::text`; sin sesión no se puede leer nada. Toda escritura debe llevar el `user_id` de la sesión (o dejar que lo ponga el `DEFAULT`). Para inspeccionar datos usa `tripflow-sql` (rol de servicio, salta RLS).
+- Cuentas nuevas e invitados empiezan sin viajes (`FirstTripScreen`); Buenos Aires ya no es el viaje por defecto.
+- **Pruebas e2e con invitado:** el botón "Entrar como invitado" crea una cuenta anónima real y vacía. Las pruebas deben crear sus propios datos y, al terminar, borrarlos con `tripflow-sql` (filas cuyo `user_id` sea de un usuario `is_anonymous`).
 - No crear cuentas de prueba a la ligera: cada registro envía un correo y el SMTP de Supabase permite ~2 por hora.
 - `App.tsx` es la puerta de acceso: sin sesión solo se muestra `AuthPage`; la app vive en `TripApp.tsx` y recibe `auth` por props (no llamar a `useAuth()` dentro de la app). Cerrar sesión borra los datos locales.
 - Pruebas e2e: `gate.mjs` y `auth.mjs` funcionan sin sesión; las de la app (`smoke`, `directions`, `export`, `offline`) necesitan iniciar sesión con una cuenta de pruebas (credenciales en `.env.local` como `E2E_EMAIL` / `E2E_PASSWORD`, nunca en el código).

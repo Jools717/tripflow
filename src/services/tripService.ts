@@ -1,4 +1,4 @@
-import { Trip, DEFAULT_BA_TRIP } from '../types/trip';
+import { Trip } from '../types/trip';
 import { cloudWrite } from './cloudQueue';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { OWNER_USER_ID, resolveOwnerId } from '../types/user';
@@ -8,11 +8,9 @@ const STORAGE_KEY_ACTIVE_TRIP = 'ba_active_trip_id';
 
 export const loadStoredTrips = (): Trip[] => {
   try {
+    // Las cuentas nuevas empiezan sin viajes: los de cada cuenta llegan desde la nube
     const raw = localStorage.getItem(STORAGE_KEY_TRIPS);
-    if (!raw) {
-      saveStoredTrips([DEFAULT_BA_TRIP]);
-      return [DEFAULT_BA_TRIP];
-    }
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
       // Migrate: ensure each trip has a userId
@@ -24,17 +22,17 @@ export const loadStoredTrips = (): Trip[] => {
       });
       return migrated;
     }
-    return [DEFAULT_BA_TRIP];
+    return [];
   } catch {
-    return [DEFAULT_BA_TRIP];
+    return [];
   }
 };
 
 export const loadStoredActiveTripId = (): string => {
   try {
-    return localStorage.getItem(STORAGE_KEY_ACTIVE_TRIP) || DEFAULT_BA_TRIP.id;
+    return localStorage.getItem(STORAGE_KEY_ACTIVE_TRIP) || '';
   } catch {
-    return DEFAULT_BA_TRIP.id;
+    return '';
   }
 };
 
@@ -99,10 +97,8 @@ export const fetchTripsDb = async (userId?: string | null): Promise<Trip[] | nul
     if (error) {
       return null;
     }
-    if (Array.isArray(data) && data.length > 0) {
-      return data.map(dbToTrip);
-    }
-    return null;
+    // Lista vacía = la cuenta no tiene viajes (null solo si hubo error de red)
+    return Array.isArray(data) ? data.map(dbToTrip) : null;
   } catch {
     return null;
   }

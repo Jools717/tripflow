@@ -78,6 +78,7 @@ export default function UserMenu({ user, onOpenAuthModal, onSignOut, onOpenWhats
                 )}
               </strong>
               {user.email && <small>{user.email}</small>}
+              {user.role === 'guest' && <small>Sesión de prueba · al cerrarla no podrás volver</small>}
             </div>
           </div>
 

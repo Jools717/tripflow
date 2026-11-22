@@ -13287,3 +13287,115 @@ button.tf-stat.open {
   .tf-auth-main { justify-content: flex-start; padding: 0 16px 28px; }
   .tf-auth-main-inner { margin-top: -14px; position: relative; z-index: 1; padding: 22px 18px; border-radius: var(--radius-lg); }
 }
+
+/* ---------- Invitado y bienvenida sin viajes ---------- */
+.tf-auth-guest {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-subtle);
+  text-align: center;
+}
+
+.tf-auth-guest > span { font-size: 12px; color: var(--text-dim); }
+
+.tf-guest-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tf-guest-btn:hover { background: #f1f5f9; }
+.tf-guest-btn:disabled { opacity: 0.7; cursor: wait; }
+
+.tf-first-trip {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+.tf-first-trip-bar {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.tf-first-trip-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.tf-first-trip-card {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 26px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-card);
+  background: var(--bg-card);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+.tf-first-trip-card h1 {
+  margin: 4px 0 0;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.tf-first-trip-card p { margin: 0; font-size: 15px; color: var(--text-muted); }
+
+.tf-first-trip-card ul {
+  align-self: stretch;
+  margin: 6px 0 8px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.tf-first-trip-card li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.tf-first-trip-card li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--pastel-sky);
+  color: var(--pastel-sky-text);
+}

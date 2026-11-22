@@ -21,11 +21,17 @@ export const translateAuthError = (message?: string): string => {
   if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Demasiados intentos. Espera un momento y vuelve a probar.';
   if (m.includes('provider is not enabled')) return 'Este método de acceso todavía no está activado.';
   if (m.includes('signups not allowed')) return 'El registro de cuentas nuevas está desactivado.';
+  if (m.includes('anonymous sign-ins are disabled')) return 'El acceso como invitado todavía no está activado.';
   if (m.includes('failed to fetch') || m.includes('network')) return 'Sin conexión. Revisa tu internet e inténtalo de nuevo.';
   return message || 'Ocurrió un error inesperado. Inténtalo de nuevo.';
 };
 
-export const mapSupabaseUser = (user: User): UserProfile => ({
+export const mapSupabaseUser = (user: User): UserProfile => user.is_anonymous ? {
+  id: user.id,
+  displayName: 'Invitado',
+  role: 'guest',
+  createdAt: user.created_at
+} : ({
   id: user.id,
   email: user.email,
   // app_metadata.display_name (solo editable desde el servidor) tiene prioridad: Google reescribe user_metadata en cada inicio de sesión
@@ -108,6 +114,18 @@ export const requestPasswordReset = async (email: string): Promise<AuthResult> =
   if (notReady) return notReady;
   const { error } = await supabase!.auth.resetPasswordForEmail(email.trim(), { redirectTo: redirectUrl() });
   return error ? { error: translateAuthError(error.message) } : {};
+};
+
+/**
+ * Entrar como invitado: Supabase crea una cuenta anónima real, con su propio espacio vacío.
+ * Sus datos solo se pueden ver desde esa sesión; al cerrarla no se puede volver a ella.
+ */
+export const signInAsGuest = async (): Promise<AuthResult & { user?: UserProfile }> => {
+  const notReady = supabaseOrError();
+  if (notReady) return notReady;
+  const { data, error } = await supabase!.auth.signInAnonymously();
+  if (error || !data.user) return { error: translateAuthError(error?.message) };
+  return { user: mapSupabaseUser(data.user) };
 };
 
 /** Cambia la contraseña del usuario con sesión (se usa tras abrir el enlace de recuperación). */

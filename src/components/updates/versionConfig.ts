@@ -16,11 +16,19 @@ export interface AppRelease {
 }
 
 export const CURRENT_RELEASE: AppRelease = {
-  version: '2.5.0',
+  version: '2.6.0',
   releaseDate: 'Noviembre 2026',
-  title: 'Versión 2.5: Tu cuenta TripFlow',
-  subtitle: 'Crea tu cuenta con Google o con tu correo, y usa la app sin internet.',
+  title: 'Versión 2.6: Tus viajes, privados',
+  subtitle: 'Cada cuenta ve solo sus viajes. Entra con Google, con tu correo o pruébala como invitado.',
   features: [
+    {
+      id: 'privacy',
+      icon: 'ShieldCheck',
+      badge: 'Seguridad',
+      badgeColor: '#10b981',
+      title: 'Viajes privados y modo invitado',
+      description: 'Nadie más puede ver ni cambiar tus viajes. ¿Solo quieres probar? Entra como invitado, sin registrarte.'
+    },
     {
       id: 'accounts',
       icon: 'User',

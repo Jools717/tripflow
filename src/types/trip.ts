@@ -86,6 +86,25 @@ export const GLOBAL_DESTINATIONS: DestinationCountry[] = [
   { code: 'NZ', name: 'Nueva Zelanda', flag: '🇳🇿', defaultCurrency: 'NZD', approxRateUSD: 1.68, suggestedCities: ['Auckland', 'Queenstown', 'Wellington', 'Christchurch'] }
 ];
 
+/**
+ * Viaje vacío de relleno mientras una cuenta no tiene viajes (la app muestra "Crea tu primer viaje").
+ * Nunca se guarda en la nube.
+ */
+export const PLACEHOLDER_TRIP: Trip = {
+  id: 'sin-viaje',
+  title: 'Mi viaje',
+  destinationCity: '',
+  countryCode: 'US',
+  flagEmoji: '✈️',
+  startDate: '2026-01-01',
+  endDate: '2026-01-01',
+  baseCurrency: 'USD',
+  localCurrency: 'USD',
+  exchangeRate: 1,
+  budgetTotalBase: 1000
+};
+
+/** Datos de referencia del viaje original. Ya NO se usa como viaje por defecto de las cuentas nuevas. */
 export const DEFAULT_BA_TRIP: Trip = {
   id: 'trip-ba-2026',
   userId: OWNER_USER_ID,

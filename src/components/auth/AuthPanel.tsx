@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { UserRound, Loader2 } from 'lucide-react';
 import { AuthApi } from '../../hooks/useAuth';
 import { GoogleButton, AuthMessage } from './AuthFields';
 import { LoginForm, SignUpForm, ForgotPasswordForm, EmailSentNotice } from './AuthForms';
@@ -17,6 +18,16 @@ export default function AuthPanel({ auth }: { auth: AuthApi }) {
   const [view, setView] = useState<View>('login');
   const [sent, setSent] = useState<{ email: string; kind: 'signup' | 'reset' }>({ email: '', kind: 'signup' });
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [guestBusy, setGuestBusy] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
+
+  const handleGuest = async () => {
+    setGuestError(null);
+    setGuestBusy(true);
+    const res = await auth.signInAsGuest();
+    setGuestBusy(false);
+    if (res.error) setGuestError(res.error);
+  };
 
   const handleGoogle = async () => {
     setGoogleError(null);
@@ -63,6 +74,16 @@ export default function AuthPanel({ auth }: { auth: AuthApi }) {
           {view === 'login' && <LoginForm {...formProps} />}
           {view === 'signup' && <SignUpForm {...formProps} />}
           {view === 'forgot' && <ForgotPasswordForm {...formProps} />}
+          {view === 'login' && (
+            <div className="tf-auth-guest">
+              <button type="button" className="tf-guest-btn" onClick={handleGuest} disabled={guestBusy}>
+                {guestBusy ? <Loader2 size={16} className="directions-spin" /> : <UserRound size={16} />}
+                Entrar como invitado
+              </button>
+              <span>Prueba TripFlow sin registrarte. Lo que crees solo estará en esta sesión.</span>
+              {guestError && <AuthMessage type="error">{guestError}</AuthMessage>}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Activity } from '../types/activity';
 import { Expense, MediaReceipt } from '../types/expense';
 import { ChecklistItem, ExpenseCategory } from '../types/category';
-import { Trip, DEFAULT_BA_TRIP } from '../types/trip';
+import { Trip, PLACEHOLDER_TRIP } from '../types/trip';
 import {
   initLocalStorageCacheVersion,
   loadStoredActivities,
@@ -57,18 +57,26 @@ export function useTripData(options: UseTripDataOptions) {
   const [exchangeRate, setExchangeRate] = useState<number>(loadStoredExchangeRate);
 
   // Active Trip derived
-  const activeTrip = trips.find((t) => t.id === activeTripId) || trips[0] || DEFAULT_BA_TRIP;
+  const activeTrip = trips.find((t) => t.id === activeTripId) || trips[0] || PLACEHOLDER_TRIP;
+  const hasTrips = trips.length > 0;
+  // Sin viajes en el dispositivo hay que esperar a la nube antes de mostrar "Crea tu primer viaje"
+  const [tripsLoaded, setTripsLoaded] = useState<boolean>(() => trips.length > 0);
 
-  // Sync trips if user logs in
+  // Viajes de la cuenta desde la nube (la nube manda, aunque devuelva cero viajes)
   useEffect(() => {
-    if (auth.user) {
-      fetchTripsDb(auth.user.id).then((cloudTrips) => {
-        if (cloudTrips && cloudTrips.length > 0) {
-          setTrips(cloudTrips);
-          saveStoredTrips(cloudTrips);
-        }
-      });
-    }
+    if (!auth.user) return;
+    let cancelled = false;
+    fetchTripsDb(auth.user.id).then((cloudTrips) => {
+      if (cancelled) return;
+      if (cloudTrips) {
+        setTrips(cloudTrips);
+        saveStoredTrips(cloudTrips);
+      }
+      setTripsLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [auth.user]);
 
   const { cloudSyncStatus, setCloudSyncStatus, cloudError, isOnline, pendingCount } = useTripSync({
@@ -215,6 +223,8 @@ export function useTripData(options: UseTripDataOptions) {
 
     // Trips state & handlers
     trips,
+    hasTrips,
+    tripsLoaded,
     activeTrip,
     activeTripId,
     handleSelectTrip,

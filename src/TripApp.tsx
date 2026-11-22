@@ -5,6 +5,7 @@ import ItineraryView from './components/itinerary/ItineraryView';
 import TabLoading from './components/common/TabLoading';
 import ActivityModal from './components/modals/ActivityModal';
 import AuthModal from './components/auth/AuthModal';
+import FirstTripScreen from './components/trips/FirstTripScreen';
 import NewPasswordModal from './components/auth/NewPasswordModal';
 import TripSelectorModal from './components/trips/TripSelectorModal';
 import UpdateModal from './components/updates/UpdateModal';
@@ -35,6 +36,35 @@ export default function TripApp({ auth }: { auth: AuthApi }) {
   });
 
   const appUpdate = useAppUpdate();
+
+  // Cuenta sin viajes (nueva o invitado): esperar a la nube y luego mostrar la bienvenida
+  if (!trip.hasTrips) {
+    if (!trip.tripsLoaded) return <TabLoading />;
+    return (
+      <>
+        <FirstTripScreen
+          user={auth.user}
+          onCreateTrip={() => trip.setIsCreateTripOpen(true)}
+          onOpenAuthModal={() => trip.setIsAuthModalOpen(true)}
+          onSignOut={auth.signOut}
+        />
+        <Suspense fallback={null}>
+          {trip.isCreateTripOpen && (
+            <CreateTripWizard
+              isOpen={trip.isCreateTripOpen}
+              onClose={() => trip.setIsCreateTripOpen(false)}
+              onCreateTrip={(newTrip) => {
+                trip.handleCreateTrip(newTrip);
+                setActiveTab('itinerario');
+              }}
+              currentUserId={auth.user?.id || OWNER_USER_ID}
+            />
+          )}
+        </Suspense>
+        <AuthModal isOpen={trip.isAuthModalOpen} onClose={() => trip.setIsAuthModalOpen(false)} auth={auth} />
+      </>
+    );
+  }
 
   return (
     <DirectionsProvider trip={trip.activeTrip}>
