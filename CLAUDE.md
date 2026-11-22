@@ -33,6 +33,10 @@ Datos de prueba: usar ids/títulos con prefijo `zz` y borrarlos al terminar. `ch
 - **AdminJools es una cuenta real** de Supabase Auth (id `26d4da6c-536c-4ed3-91af-62e1f11a28f8`, rol `admin` en `app_metadata`) y es dueña del viaje de Buenos Aires. El antiguo acceso local "12345" ya no existe. `OWNER_USER_ID` / `resolveOwnerId()` en `src/types/user.ts` son el dueño por defecto mientras la app se pueda usar sin sesión (hasta la Fase 8.3); no volver a escribir `'user-admin-jools'`.
 - Hasta el paso 8.4, las políticas RLS siguen abiertas: no hay aislamiento real entre usuarios.
 - No crear cuentas de prueba a la ligera: cada registro envía un correo y el SMTP de Supabase permite ~2 por hora.
+- `App.tsx` es la puerta de acceso: sin sesión solo se muestra `AuthPage`; la app vive en `TripApp.tsx` y recibe `auth` por props (no llamar a `useAuth()` dentro de la app). Cerrar sesión borra los datos locales.
+- Pruebas e2e: `gate.mjs` y `auth.mjs` funcionan sin sesión; las de la app (`smoke`, `directions`, `export`, `offline`) necesitan iniciar sesión con una cuenta de pruebas (credenciales en `.env.local` como `E2E_EMAIL` / `E2E_PASSWORD`, nunca en el código).
+- Plantillas de correo en español: `supabase/templates/`. Supabase solo deja editarlas con SMTP propio (pendiente).
+- Nombre visible: `app_metadata.display_name` tiene prioridad sobre `user_metadata` (Google lo sobrescribe en cada inicio de sesión).
 
 ## Decisiones de diseño a respetar
 - **Cotización por viaje:** Buenos Aires usa la fila global `trip_settings.id='config'` (Dólar Blue); el resto de viajes, `trips.exchange_rate`. Ver `useTripData.ts`. No volver a escribir la cotización de otro viaje en `trip_settings`.

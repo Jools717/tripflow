@@ -11,6 +11,8 @@ import {
   signOut as authSignOut,
   onAuthStateChange
 } from '../services/authService';
+import { flushOutbox, getPendingCount } from '../services/cloudQueue';
+import { clearLocalTripData } from '../services/storageService';
 
 export function useAuth() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -46,9 +48,20 @@ export function useAuth() {
     return result;
   };
 
-  const handleSignOut = async () => {
+  /** Cierra sesión: envía lo pendiente, avisa si algo no se pudo enviar y borra los datos del dispositivo. */
+  const handleSignOut = async (): Promise<boolean> => {
+    await flushOutbox().catch(() => undefined);
+    const pending = getPendingCount();
+    if (pending > 0) {
+      const ok = window.confirm(
+        `Tienes ${pending} cambio(s) sin enviar a la nube porque no hay conexión. Si cierras sesión ahora se perderán.\n\n¿Cerrar sesión de todas formas?`
+      );
+      if (!ok) return false;
+    }
     await authSignOut();
+    clearLocalTripData();
     setUser(null);
+    return true;
   };
 
   return {

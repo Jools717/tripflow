@@ -28,8 +28,9 @@ export const translateAuthError = (message?: string): string => {
 export const mapSupabaseUser = (user: User): UserProfile => ({
   id: user.id,
   email: user.email,
+  // app_metadata.display_name (solo editable desde el servidor) tiene prioridad: Google reescribe user_metadata en cada inicio de sesión
   displayName:
-    user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Viajero',
+    user.app_metadata?.display_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Viajero',
   avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
   role: user.app_metadata?.role === 'admin' ? 'admin' : 'user',
   createdAt: user.created_at

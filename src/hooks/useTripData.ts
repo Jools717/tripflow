@@ -24,15 +24,16 @@ import {
 import { useTripSync } from './useTripSync';
 import { useItinerary } from './useItinerary';
 import { useWallet } from './useWallet';
-import { useAuth } from './useAuth';
+import { AuthApi } from './useAuth';
 import { parseCurrencyNumber, isActivityTrackedInExpenses } from '../utils/helpers';
 import { OWNER_USER_ID } from '../types/user';
 
 interface UseTripDataOptions {
+  auth: AuthApi;
   onNavigateToTab?: (tab: string) => void;
 }
 
-export function useTripData(options?: UseTripDataOptions) {
+export function useTripData(options: UseTripDataOptions) {
   initLocalStorageCacheVersion();
 
   // Multi-Trip State
@@ -45,7 +46,7 @@ export function useTripData(options?: UseTripDataOptions) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Auth Hook
-  const auth = useAuth();
+  const auth = options.auth;
 
   // Data states
   const [activities, setActivities] = useState<Activity[]>(loadStoredActivities);

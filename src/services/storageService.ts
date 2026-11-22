@@ -213,3 +213,25 @@ export const loadStoredExchangeRate = (): number => {
   } catch {}
   return TRIP_INFO.defaultExchangeRateUSD || 1540;
 };
+
+/**
+ * Privacidad al cerrar sesión: borra del dispositivo los viajes, gastos, copias de seguridad
+ * locales y la cola de cambios, para que la siguiente persona que use el equipo no vea nada.
+ * Los datos siguen a salvo en la nube.
+ */
+export const clearLocalTripData = (): void => {
+  try {
+    const extra = ['tripflow_cloud_outbox', 'tripflow_user_trips', 'tripflow_active_trip_id'];
+    const toRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      if (STORAGE_KEYS.includes(key) || extra.includes(key) || key.startsWith('ba_safety_backup_') || key.startsWith('ba_itinerary_')) {
+        toRemove.push(key);
+      }
+    }
+    toRemove.forEach((key) => localStorage.removeItem(key));
+  } catch (err) {
+    console.error('No se pudieron borrar los datos locales:', err);
+  }
+};

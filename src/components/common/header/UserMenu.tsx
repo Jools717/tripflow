@@ -6,7 +6,7 @@ import { CURRENT_RELEASE } from '../../updates/versionConfig';
 interface UserMenuProps {
   user?: UserProfile | null;
   onOpenAuthModal?: () => void;
-  onSignOut?: () => Promise<void> | void;
+  onSignOut?: () => Promise<unknown> | void;
   onOpenWhatsNew?: () => void;
 }
 
