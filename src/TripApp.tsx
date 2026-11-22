@@ -10,6 +10,7 @@ import NewPasswordModal from './components/auth/NewPasswordModal';
 import TripSelectorModal from './components/trips/TripSelectorModal';
 import UpdateModal from './components/updates/UpdateModal';
 import UpdateBannerPill from './components/updates/UpdateBannerPill';
+import UpdatedToast from './components/updates/UpdatedToast';
 import DirectionsProvider from './components/directions/DirectionsProvider';
 import { useTripData } from './hooks/useTripData';
 import { useAppUpdate } from './hooks/useAppUpdate';
@@ -166,6 +167,12 @@ export default function TripApp({ auth }: { auth: AuthApi }) {
       </main>
 
       {/* Floating pill for users with app already open when an update is detected */}
+      <UpdatedToast
+        isVisible={appUpdate.justUpdated}
+        onOpenWhatsNew={appUpdate.forceShowWhatsNew}
+        onClose={appUpdate.dismissJustUpdated}
+      />
+
       <UpdateBannerPill
         isVisible={appUpdate.hasBackgroundUpdate}
         onUpdateApp={appUpdate.handleOpenBackgroundUpdateModal}

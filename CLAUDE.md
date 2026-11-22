@@ -40,6 +40,11 @@ Datos de prueba: usar ids/títulos con prefijo `zz` y borrarlos al terminar. `ch
 - Plantillas de correo en español: `supabase/templates/`. Supabase solo deja editarlas con SMTP propio (pendiente).
 - Nombre visible: `app_metadata.display_name` tiene prioridad sobre `user_metadata` (Google lo sobrescribe en cada inicio de sesión).
 
+## Publicar versiones
+- Al abrir o volver a la app, si el Service Worker trae una versión nueva se aplica sola (copia de seguridad + recarga); si la app ya se está usando, aparece la píldora "¡Nueva versión lista!".
+- Tras actualizarse: si cambió `CURRENT_RELEASE.version` (`versionConfig.ts`) se muestra la pantalla completa de novedades; si no cambió, el aviso corto "TripFlow se actualizó". **Sube la versión y escribe sus novedades en cada publicación con cambios visibles.**
+- Íconos de la app: PNG en `public/tripflow-*.png` (Android WebAPK no acepta SVG). Si cambia el ícono, cambia también el nombre del archivo para que Chrome lo detecte.
+
 ## Decisiones de diseño a respetar
 - **Cotización por viaje:** Buenos Aires usa la fila global `trip_settings.id='config'` (Dólar Blue); el resto de viajes, `trips.exchange_rate`. Ver `useTripData.ts`. No volver a escribir la cotización de otro viaje en `trip_settings`.
 - **Fechas `YYYY-MM-DD`:** usar `parseLocalDate` / `toLocalIsoDate` / `countTripDays` de `src/utils/helpers.ts`; `new Date('YYYY-MM-DD')` es UTC y resta un día en América.

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { parseLocalDate } from '../../utils/helpers';
+import { parseLocalDate, countTripDays, isActivityTrackedInExpenses } from '../../utils/helpers';
 import {
   Plane, Calendar, Plus, Compass, Trash2, ArrowRight, Wallet, CheckCircle2, ShieldCheck, Sparkles, Clock
 } from 'lucide-react';
@@ -45,7 +45,7 @@ export default function TripsDashboard({
       end.setHours(23, 59, 59, 999);
 
       const diffStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      const durationDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const durationDays = countTripDays(trip.startDate, trip.endDate);
 
       if (now > end) {
         return { status: 'completed', label: 'Viaje Concluido', tagClass: 'completed', durationDays };
@@ -153,7 +153,10 @@ export default function TripsDashboard({
           const tripExpenses = allExpenses.filter(e => (e.tripId || 'trip-ba-2026') === trip.id);
 
           const totalDirect = tripExpenses.reduce((sum, e) => sum + (Number(e.amountARS) || 0), 0);
-          const totalItin = tripActivities.reduce((sum, a) => sum + (parseCurrencyNumber(a.costEstimatedARS) || 0), 0);
+          // Igual que la cabecera: un plan cuyo gasto ya está registrado no se cuenta dos veces
+          const totalItin = tripActivities
+            .filter((a) => !isActivityTrackedInExpenses(a, tripExpenses))
+            .reduce((sum, a) => sum + (parseCurrencyNumber(a.costEstimatedARS) || 0), 0);
           const totalSpentLocal = totalDirect + totalItin;
 
           const rate = trip.exchangeRate && trip.exchangeRate > 0 ? trip.exchangeRate : 1540;
@@ -236,11 +239,11 @@ export default function TripsDashboard({
                 </div>
                 <div className="card-metric-item">
                   <CheckCircle2 size={14} className="text-emerald" />
-                  <span>{tripActivities.filter(a => a.completed).length} listas</span>
+                  <span>{tripActivities.filter(a => a.completed).length} {tripActivities.filter(a => a.completed).length === 1 ? 'lista' : 'listas'}</span>
                 </div>
                 <div className="card-metric-item">
                   <Wallet size={14} className="text-amber" />
-                  <span>{tripExpenses.length} compras</span>
+                  <span>{tripExpenses.length} {tripExpenses.length === 1 ? 'compra' : 'compras'}</span>
                 </div>
               </div>
 

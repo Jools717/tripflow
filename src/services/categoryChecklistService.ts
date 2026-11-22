@@ -40,6 +40,10 @@ export const checklistToDb = (chk: ChecklistItem): DbChecklistRow => ({
 
 export const dbToChecklist = (row: DbChecklistRow): ChecklistItem => ({
   id: row.id,
+  // Sin tripId los ítems de la nube se trataban como del viaje de Buenos Aires y desaparecían
+  // de la lista en cuanto se añadía uno nuevo
+  ...(row.trip_id ? { tripId: row.trip_id } : {}),
+  ...(row.user_id ? { userId: row.user_id } : {}),
   text: row.text,
   category: row.category,
   completed: Boolean(row.completed)

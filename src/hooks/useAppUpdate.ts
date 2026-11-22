@@ -2,7 +2,18 @@ import { useState, useEffect } from 'react';
 import { CURRENT_RELEASE } from '../components/updates/versionConfig';
 import { UpdateModalStage } from '../components/updates/UpdateModal';
 import { createSafetyDataBackup } from '../services/storageService';
-import { registerServiceWorker, applyServiceWorkerUpdate, isFreshlyOpened } from '../services/swRegistration';
+import { registerServiceWorker, applyServiceWorkerUpdate, isFreshlyOpened, JUST_UPDATED_KEY } from '../services/swRegistration';
+
+// ¿Esta carga viene justo de una actualización? Se consume una sola vez.
+const consumeJustUpdated = (): boolean => {
+  try {
+    const flag = sessionStorage.getItem(JUST_UPDATED_KEY) === '1';
+    sessionStorage.removeItem(JUST_UPDATED_KEY);
+    return flag;
+  } catch {
+    return false;
+  }
+};
 
 const STORAGE_KEY_SEEN_VERSION = 'ba_last_seen_app_version';
 
@@ -10,6 +21,20 @@ export function useAppUpdate() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [modalStage, setModalStage] = useState<UpdateModalStage>('loading');
   const [hasBackgroundUpdate, setHasBackgroundUpdate] = useState(false);
+  // Aviso "TripFlow se actualizó" tras una actualización que no cambió el número de versión
+  const [justUpdated, setJustUpdated] = useState<boolean>(() => {
+    const updated = consumeJustUpdated();
+    let lastSeen: string | null = null;
+    try { lastSeen = localStorage.getItem(STORAGE_KEY_SEEN_VERSION); } catch { /* sin almacenamiento */ }
+    // Si cambió la versión ya se muestra la pantalla completa de novedades
+    return updated && lastSeen === CURRENT_RELEASE.version;
+  });
+
+  useEffect(() => {
+    if (!justUpdated) return;
+    const t = setTimeout(() => setJustUpdated(false), 8000);
+    return () => clearTimeout(t);
+  }, [justUpdated]);
 
   // Check version on initial launch
   useEffect(() => {
@@ -67,6 +92,8 @@ export function useAppUpdate() {
     isUpdateModalOpen,
     modalStage,
     hasBackgroundUpdate,
+    justUpdated,
+    dismissJustUpdated: () => setJustUpdated(false),
     handleDismissUpdate,
     handleApplyReload,
     handleOpenBackgroundUpdateModal,

@@ -2,7 +2,13 @@ import React from 'react';
 import { ChevronLeft, ChevronRight, AlertTriangle, Coffee, Plus } from 'lucide-react';
 import { Activity } from '../../types/activity';
 import { DayInfo, INITIAL_DAYS } from '../../data/initialData';
-import { formatCurrencyARS, formatCurrencyUSD } from '../../utils/helpers';
+import { formatCurrencyARS, formatCurrencyUSD, parseLocalDate } from '../../utils/helpers';
+
+// "mié 12" y "may" a partir de la fecha del día (vale para cualquier viaje)
+const pillDate = (iso: string, opts: Intl.DateTimeFormatOptions) => {
+  const d = parseLocalDate(iso);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', opts).replace('.', '');
+};
 import TimelineCard from './TimelineCard';
 
 interface TimelineViewProps {
@@ -76,10 +82,10 @@ export default function TimelineView({
                   {isCompletedAll && <span className="day-check-indicator">✓</span>}
                 </div>
                 <div className="day-pill-date">
-                  {d.dateFormatted.split(' ')[0]} {d.dateFormatted.split(' ')[1]}
+                  {pillDate(d.date, { weekday: 'short', day: 'numeric' })}
                 </div>
                 <div className="day-pill-barrio" title={d.barrioPrincipal}>
-                  {d.barrioPrincipal.split(' ')[0]}
+                  {pillDate(d.date, { month: 'short' })}
                 </div>
               </button>
             );
@@ -101,10 +107,10 @@ export default function TimelineView({
 
           <div className="day-header-title-box">
             <div className="day-badge-row">
-              <span className="badge-day-number">DÍA {currentTimelineDay.dayNumber} DE 14</span>
+              <span className="badge-day-number">DÍA {currentTimelineDay.dayNumber} DE {days.length}</span>
               <span className="badge-day-barrio">{currentTimelineDay.barrioPrincipal}</span>
               {currentTimelineDay.isDepartureDay && (
-                <span className="badge-warning">✈️ Vuelo de salida 3:30 PM</span>
+                <span className="badge-warning">{currentTimelineDay.date === '2026-10-23' ? '✈️ Vuelo de salida 3:30 PM' : '✈️ Día de regreso'}</span>
               )}
             </div>
             <h2 className="day-title-text">{currentTimelineDay.dateFormatted}</h2>

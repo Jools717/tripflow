@@ -28,7 +28,7 @@ export default function PlanFieldsForm({
             <option value="vida_nocturna">Vida Nocturna & Bares</option>
             <option value="transporte">Transporte & Traslados</option>
             <option value="mercado">Mercado / Supermercado</option>
-            <option value="compras">Compras & Alfajores</option>
+            <option value="compras">Compras & Recuerdos</option>
             <option value="relax">Descanso & Hogar</option>
           </select>
         </div>

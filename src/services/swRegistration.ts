@@ -59,9 +59,13 @@ export const registerServiceWorker = (onUpdateReady: () => void): void => {
  * Activa la versión nueva y recarga cuando toma el control.
  * Devuelve false si no hay una versión esperando (el llamador debe recargar por su cuenta).
  */
+export const JUST_UPDATED_KEY = 'tripflow_just_updated';
+
 export const applyServiceWorkerUpdate = (): boolean => {
   const waiting = registration?.waiting;
   if (!waiting) return false;
+  // Tras recargar, la app mostrará "TripFlow se actualizó" (sessionStorage sobrevive a la recarga)
+  try { sessionStorage.setItem(JUST_UPDATED_KEY, '1'); } catch { /* sin almacenamiento */ }
   let reloaded = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (reloaded) return;

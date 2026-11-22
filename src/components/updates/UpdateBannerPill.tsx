@@ -1,17 +1,14 @@
 import React from 'react';
 import { Sparkles, ArrowRight } from 'lucide-react';
-import { CURRENT_RELEASE } from './versionConfig';
 
 interface UpdateBannerPillProps {
   isVisible: boolean;
   onUpdateApp: () => void;
-  targetVersion?: string;
 }
 
 export default function UpdateBannerPill({
   isVisible,
-  onUpdateApp,
-  targetVersion = CURRENT_RELEASE.version
+  onUpdateApp
 }: UpdateBannerPillProps) {
   if (!isVisible) return null;
 
@@ -26,7 +23,7 @@ export default function UpdateBannerPill({
         <span className="pill-pulse-dot"></span>
         <Sparkles size={15} className="text-amber" />
         <span className="pill-text">
-          <strong>¡Nueva versión v{targetVersion} lista!</strong> Toca aquí para actualizar la app
+          <strong>¡Nueva versión lista!</strong> Toca aquí para actualizar la app
         </span>
         <ArrowRight size={15} className="pill-arrow" />
       </button>
