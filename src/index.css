@@ -13501,3 +13501,18 @@ button.tf-stat.open {
   cursor: pointer;
   padding: 4px;
 }
+
+.tf-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--pastel-sky-border);
+  background: var(--pastel-sky);
+  color: var(--pastel-sky-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}

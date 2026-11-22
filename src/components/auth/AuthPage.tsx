@@ -1,5 +1,6 @@
 import React from 'react';
-import { CalendarDays, Wallet, WifiOff, Navigation } from 'lucide-react';
+import { CalendarDays, Wallet, WifiOff, Navigation, Download } from 'lucide-react';
+import { useInstallPrompt } from '../../services/installPrompt';
 import { Wordmark } from '../common/Logo';
 import { AuthApi } from '../../hooks/useAuth';
 import AuthPanel from './AuthPanel';
@@ -13,6 +14,7 @@ const FEATURES = [
 
 /** Página de inicio de sesión a pantalla completa: sin sesión no se carga ningún dato de viajes. */
 export default function AuthPage({ auth }: { auth: AuthApi }) {
+  const { canInstall, install } = useInstallPrompt();
   return (
     <div className="tf-auth-page">
       <aside className="tf-auth-hero">
@@ -31,6 +33,11 @@ export default function AuthPage({ auth }: { auth: AuthApi }) {
         <div className="tf-auth-main-inner">
           <AuthPanel auth={auth} />
         </div>
+        {canInstall && (
+          <button type="button" className="tf-install-btn" onClick={install}>
+            <Download size={16} /> Instalar TripFlow en este dispositivo
+          </button>
+        )}
         <p className="tf-auth-foot">TripFlow · Tus datos se guardan de forma privada en tu cuenta.</p>
       </main>
     </div>

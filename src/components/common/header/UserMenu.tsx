@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LogIn, LogOut, Sparkles, ShieldCheck, ChevronDown, UserCircle2 } from 'lucide-react';
+import { LogIn, LogOut, Sparkles, ShieldCheck, ChevronDown, UserCircle2, Download } from 'lucide-react';
+import { useInstallPrompt } from '../../../services/installPrompt';
 import { UserProfile } from '../../../types/user';
 import { CURRENT_RELEASE } from '../../updates/versionConfig';
 
@@ -14,6 +15,7 @@ interface UserMenuProps {
 export default function UserMenu({ user, onOpenAuthModal, onSignOut, onOpenWhatsNew }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const { canInstall, install } = useInstallPrompt();
 
   // Cerrar con clic fuera o con Escape
   useEffect(() => {
@@ -93,6 +95,13 @@ export default function UserMenu({ user, onOpenAuthModal, onSignOut, onOpenWhats
               <Sparkles size={17} />
               <span>Novedades</span>
               <span className="tf-menu-badge">v{versionLabel}</span>
+            </button>
+          )}
+
+          {canInstall && (
+            <button type="button" role="menuitem" className="tf-menu-item" onClick={run(install)}>
+              <Download size={17} />
+              <span>Instalar la app</span>
             </button>
           )}
 

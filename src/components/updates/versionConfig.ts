@@ -16,7 +16,7 @@ export interface AppRelease {
 }
 
 export const CURRENT_RELEASE: AppRelease = {
-  version: '2.7.0',
+  version: '2.7.1',
   releaseDate: 'Noviembre 2026',
   title: 'Versión 2.7: Lista para cualquier destino',
   subtitle: 'Nuevo logo, la app se actualiza sola y todo se adapta a tu viaje: días, presupuesto y moneda.',
@@ -26,8 +26,8 @@ export const CURRENT_RELEASE: AppRelease = {
       icon: 'Zap',
       badge: 'Nuevo',
       badgeColor: '#0284c7',
-      title: 'Nuevo logo y actualización automática',
-      description: 'La T de TripFlow ahora es un avión. Al abrir la app se actualiza sola y te avisa de lo nuevo.'
+      title: 'Nuevo logo, instalar y actualizar',
+      description: 'La T de TripFlow ahora es un avión. Instálala desde tu menú de cuenta; al abrirla se actualiza sola y te avisa de lo nuevo.'
     },
     {
       id: 'any-destination',
