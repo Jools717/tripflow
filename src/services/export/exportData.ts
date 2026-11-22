@@ -9,6 +9,7 @@ export interface ExportDay {
   dayNumber: number;
   date: string; // YYYY-MM-DD
   label: string; // "sáb, 10 oct"
+  color: string; // color del día (pines del mapa)
   activities: Activity[];
 }
 
@@ -66,6 +67,7 @@ export const buildExportDays = (trip: Trip, activities: Activity[]): ExportDay[]
     dayNumber: day.dayNumber,
     date: day.date,
     label: formatDayLabel(day.date),
+    color: day.badgeColor || '#0ea5e9',
     activities: activities
       .filter((a) => a.dayNumber === day.dayNumber)
       .map((a) => ({ ...a, title: (a.title || '').trim() }))

@@ -28,9 +28,16 @@ Scripts del usuario en `/home/jools/bin/` (permitidos en `~/.claude/settings.jso
 
 Datos de prueba: usar ids/títulos con prefijo `zz` y borrarlos al terminar. `checklist`, `activities` y `expenses` tienen FK a `trips`.
 
+## Autenticación (Fase 8 en curso, ver ROADMAP)
+- Supabase Auth: correo + contraseña (con confirmación) y Google. `src/services/authService.ts` / `src/hooks/useAuth.ts`; UI en `src/components/auth/`.
+- **AdminJools es una cuenta real** de Supabase Auth (id `26d4da6c-536c-4ed3-91af-62e1f11a28f8`, rol `admin` en `app_metadata`) y es dueña del viaje de Buenos Aires. El antiguo acceso local "12345" ya no existe. `OWNER_USER_ID` / `resolveOwnerId()` en `src/types/user.ts` son el dueño por defecto mientras la app se pueda usar sin sesión (hasta la Fase 8.3); no volver a escribir `'user-admin-jools'`.
+- Hasta el paso 8.4, las políticas RLS siguen abiertas: no hay aislamiento real entre usuarios.
+- No crear cuentas de prueba a la ligera: cada registro envía un correo y el SMTP de Supabase permite ~2 por hora.
+
 ## Decisiones de diseño a respetar
 - **Cotización por viaje:** Buenos Aires usa la fila global `trip_settings.id='config'` (Dólar Blue); el resto de viajes, `trips.exchange_rate`. Ver `useTripData.ts`. No volver a escribir la cotización de otro viaje en `trip_settings`.
 - **Fechas `YYYY-MM-DD`:** usar `parseLocalDate` / `toLocalIsoDate` / `countTripDays` de `src/utils/helpers.ts`; `new Date('YYYY-MM-DD')` es UTC y resta un día en América.
-- **Errores de Supabase:** supabase-js no lanza, devuelve `{ error }`. Pasarlo siempre a `reportCloudError()` (`src/services/cloudErrors.ts`) para que se vea el badge "⚠️ Error al guardar".
+- **Escrituras en Supabase:** usar siempre `cloudWrite()` (`src/services/cloudQueue.ts`), nunca `supabase.from(...).insert/update/delete` directo: encola los cambios sin conexión y reporta los errores de datos con `reportCloudError()` (badge "Error al guardar"). Las lecturas pueden usar el cliente directamente.
+- **Modo offline:** Service Worker generado por `build/serviceWorkerPlugin.js` (plantilla `build/sw-template.js`); solo en producción, así que se prueba con `vite preview`, no con `npm run dev`. Las pruebas e2e deben poner `localStorage.ba_last_seen_app_version` a la versión actual para que el modal de novedades no tape la interfaz.
 - **Exportación (Fase 7):** `src/services/export/` (PDF imprimible, `.ics`, resumen WhatsApp) + `src/components/export/ExportModal.tsx`.
 - **Cómo llegar:** todo botón de ruta usa `useDirections()` (`src/components/directions/directionsContext.ts`), que abre `DirectionsModal` (pide la ubicación, muestra la ruta con un iframe de **Maps Embed API** y ofrece abrir Google Maps con `origin`). La clave `VITE_GOOGLE_MAPS_EMBED_KEY` está en `.env.local` y en Vercel (Production); restringida en Google Cloud a `trip-flow-app.vercel.app`, `localhost:5173` y `localhost:4173`, y solo a Maps Embed API. Sin clave, el modal funciona sin mapa. No volver a enlazar `google.com/maps/dir` directamente desde un `window.open` tras un `await`: los navegadores móviles lo bloquean.

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CURRENT_RELEASE } from '../components/updates/versionConfig';
 import { UpdateModalStage } from '../components/updates/UpdateModal';
 import { createSafetyDataBackup } from '../services/storageService';
+import { registerServiceWorker, applyServiceWorkerUpdate } from '../services/swRegistration';
 
 const STORAGE_KEY_SEEN_VERSION = 'ba_last_seen_app_version';
 
@@ -22,21 +23,9 @@ export function useAppUpdate() {
     }
   }, []);
 
-  // Listen to visibilitychange / window focus (simulate detection if app was kept open)
+  // Detección real: el Service Worker avisa cuando Vercel publicó una versión nueva y ya está descargada
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        const lastSeen = localStorage.getItem(STORAGE_KEY_SEEN_VERSION);
-        if (lastSeen && lastSeen !== CURRENT_RELEASE.version) {
-          setHasBackgroundUpdate(true);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    registerServiceWorker(() => setHasBackgroundUpdate(true));
   }, []);
 
   const handleDismissUpdate = () => {
@@ -53,7 +42,8 @@ export function useAppUpdate() {
     localStorage.setItem(STORAGE_KEY_SEEN_VERSION, CURRENT_RELEASE.version);
     setIsUpdateModalOpen(false);
     setHasBackgroundUpdate(false);
-    window.location.reload();
+    // Si hay una versión nueva esperando, el Service Worker la activa y recarga; si no, recarga normal
+    if (!applyServiceWorkerUpdate()) window.location.reload();
   };
 
   const handleOpenBackgroundUpdateModal = () => {

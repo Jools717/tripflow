@@ -16,11 +16,35 @@ export interface AppRelease {
 }
 
 export const CURRENT_RELEASE: AppRelease = {
-  version: '2.2.0',
+  version: '2.5.0',
   releaseDate: 'Noviembre 2026',
-  title: 'Versión 2.2: Cómo llegar y Exportar',
-  subtitle: 'Llega a cada plan desde donde estés y lleva tu itinerario a cualquier parte.',
+  title: 'Versión 2.5: Tu cuenta TripFlow',
+  subtitle: 'Crea tu cuenta con Google o con tu correo, y usa la app sin internet.',
   features: [
+    {
+      id: 'accounts',
+      icon: 'User',
+      badge: 'Nuevo',
+      badgeColor: '#0284c7',
+      title: 'Cuentas con Google o correo',
+      description: 'Regístrate con Google o con tu correo y una contraseña. Si la olvidas, te enviamos un enlace para crear una nueva.'
+    },
+    {
+      id: 'offline',
+      icon: 'Zap',
+      badge: 'Nuevo',
+      badgeColor: '#f59e0b',
+      title: 'Modo sin conexión',
+      description: 'La app abre sin internet y lo que anotes se envía a la nube al recuperar la señal. Verás "Sin conexión" y los cambios pendientes en la cabecera.'
+    },
+    {
+      id: 'compact-header',
+      icon: 'User',
+      badge: 'Nuevo',
+      badgeColor: '#6d28d9',
+      title: 'Cabecera y menú de cuenta',
+      description: 'Más espacio para tu itinerario. Toca tu avatar para ver tu cuenta, las novedades o cerrar sesión, y la cotización para editarla.'
+    },
     {
       id: 'directions',
       icon: 'Globe',
@@ -30,28 +54,12 @@ export const CURRENT_RELEASE: AppRelease = {
       description: 'Toca "¿Cómo llegar?" en un plan o en el mapa: ve la ruta de Google Maps desde donde estás sin salir de la app, con transporte, a pie, auto o bici.'
     },
     {
-      id: 'export-pdf',
+      id: 'export',
       icon: 'Receipt',
       badge: 'Nuevo',
       badgeColor: '#ef4444',
-      title: 'Informe PDF',
-      description: 'Itinerario día por día con resumen financiero y gastos, listo para imprimir o guardar offline. Botón "Exportar" en el Itinerario.'
-    },
-    {
-      id: 'export-ics-share',
-      icon: 'Zap',
-      badge: 'Nuevo',
-      badgeColor: '#10b981',
-      title: 'Calendario y WhatsApp',
-      description: 'Añade tus planes a Google Calendar, Apple Calendar u Outlook (.ics) o comparte un resumen del viaje por WhatsApp.'
-    },
-    {
-      id: 'fixes-201',
-      icon: 'ShieldCheck',
-      badge: 'Corrección',
-      badgeColor: '#8b5cf6',
-      title: 'Viajes nuevos más fiables',
-      description: 'Cada viaje tiene su propia cotización, las fechas son exactas, el asistente ya no se salta pasos y verás un aviso si algo no se guarda en la nube.'
+      title: 'Exportar: PDF con mapa, calendario y WhatsApp',
+      description: 'Botón "Exportar" en el Itinerario: informe PDF con mapa de planes, archivo para tu calendario o resumen por WhatsApp.'
     }
   ]
 };

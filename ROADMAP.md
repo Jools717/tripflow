@@ -2,7 +2,7 @@
 
 > **Documento de Contexto y Progreso para Desarrolladores y Agentes de IA**  
 > **Última Actualización:** 2 de Noviembre de 2026  
-> **Estado General:** Fases 0 a 7 Completadas al 100% · Versión 2.2.0
+> **Estado General:** Fases 0 a 7 Completadas · Versión 2.4.0 · Pendientes en §2.1
 
 ---
 
@@ -30,6 +30,16 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ✅ **COMPLETADO** |
 | **Fase 6** | **Colaboración & Cloud Sync** | Migración de base de datos ejecutada, aislamiento por tripId/userId y Realtime | ✅ **COMPLETADO** |
 | **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | ✅ **COMPLETADO** |
+| **Fase 8** | **Cuentas reales & Migración** | Registro con correo/Google, migrar datos de AdminJools, RLS por usuario, colaboración | 🟡 **EN CURSO (8.1 y 8.2 hechas)** |
+
+### 2.1 Pendientes detectados (auditoría Noviembre 2026; actualizado en v2.4.0)
+| Pendiente | Detalle | Prioridad |
+|---|---|---|
+| ~~Modo offline real (Service Worker)~~ | ✅ Resuelto en v2.4.0 (ver abajo). | — |
+| **Colaboración** | La Fase 6 se llama "Colaboración & Cloud Sync", pero solo se implementó la sincronización: no se puede invitar a otra persona a un viaje. | Media |
+| **Autenticación real** | `AdminJools` / `12345` está fijo en `authService.ts` y las políticas RLS están abiertas (decisión consciente: proyecto de pruebas). Necesario antes de abrir a usuarios reales. | Alta antes de producción |
+| ~~Tamaño del bundle~~ | ✅ v2.4.0: carga inicial 950 KB → 584 KB (pestañas, modales, Leaflet y Tesseract bajo demanda). El resto es React + supabase-js. | — |
+| ~~Mapa de pines en el PDF~~ | ✅ v2.4.0: `reportMap.ts` (Leaflet + OSM en el documento del informe; sin internet la sección se omite). | — |
 
 ---
 
@@ -196,6 +206,30 @@ Permitir que el viajero exporte su itinerario completo en formato imprimible/PDF
   - WhatsApp (`wa.me`, versión compacta automática si supera 3.000 caracteres), menú nativo del celular (`navigator.share`) y copiar al portapapeles.
 - [x] **4. Interfaz (`src/components/export/ExportModal.tsx`):** ✅
   - Botón **"Exportar"** junto a "Nuevo Plan" en el Itinerario, modal con las 3 opciones y mensajes de confirmación.
+
+### 🟡 Fase 8: Cuentas reales y plan de migración (iniciada Noviembre 2026 · v2.5.0)
+**Objetivo:** pasar de un único usuario local de pruebas (AdminJools / 12345) a cuentas reales de Supabase Auth, sin perder los datos de Buenos Aires.
+
+| Paso | Qué | Estado |
+|---|---|---|
+| **8.1 Acceso real** | `authService.ts` + `useAuth.ts` reescritos: registro con correo y contraseña (confirmación por correo), inicio de sesión, recuperar contraseña (evento `PASSWORD_RECOVERY` → `NewPasswordModal`), Google OAuth. Errores traducidos al español. Ya **no** se entra solo como AdminJools: el acceso de pruebas queda en "Acceso de pruebas (temporal)". UI en `src/components/auth/` (`AuthModal`, `AuthForms`, `AuthFields`, `NewPasswordModal`). | ✅ Código hecho |
+| **8.2 Configuración** | Supabase: Site URL y Redirect URLs (hoy `http://localhost:3000`), proveedor Google (cliente OAuth en Google Cloud), longitud mínima de contraseña 8, plantillas de correo en español. Para usuarios reales: SMTP propio (el de Supabase solo envía ~2 correos/hora). | ⏳ Usuario |
+| **8.2 Migración de datos** | AdminJools es ahora una cuenta real de Supabase Auth (`26d4da6c-536c-4ed3-91af-62e1f11a28f8`, `app_metadata.role = admin`). Los 36 registros de Buenos Aires pasaron de `user-admin-jools` a esa cuenta (transacción, copia `2026-11-22_0417`) y los `DEFAULT` de `user_id` apuntan a ella. En el código: `OWNER_USER_ID` / `resolveOwnerId()` (`types/user.ts`) convierten el id antiguo al guardar. Retirado el acceso local "12345". | ✅ Hecho |
+| **8.3 App multiusuario** | Sin sesión → pantalla de bienvenida; usuarios nuevos empiezan sin el viaje de Buenos Aires (hoy `DEFAULT_BA_TRIP` y `'trip-ba-2026'` son el valor por defecto en varios sitios); retirar AdminJools. | ⏳ |
+| **8.4 Seguridad (RLS)** | Sustituir las políticas abiertas por `user_id = auth.uid()::text` (y, en tablas hijas, pertenencia al viaje). | ⏳ |
+| **8.5 Colaboración** | Tabla `trip_members` + invitaciones por enlace/correo; políticas RLS que incluyan a los miembros. | ⏳ |
+
+### ✅ v2.4.0: Modo sin conexión, carga más ligera y mapa en el PDF (Noviembre 2026)
+- **Service Worker** generado en cada build por `build/serviceWorkerPlugin.js` + `build/sw-template.js` (sin dependencias): precachea todos los archivos del build; navegación red-primero con respaldo offline; teselas de OSM (máx. 400) y fuentes/OCR en caché al usarse; Supabase, cotizaciones y Google Maps nunca se cachean. Solo se registra en producción (`src/services/swRegistration.ts`).
+- **Detección real de versiones:** el aviso "Nueva versión lista" lo dispara el Service Worker cuando Vercel publica (antes era simulado). Al tocarlo: copia de seguridad → `SKIP_WAITING` → recarga.
+- **Cola de cambios pendientes** (`src/services/cloudQueue.ts`): todas las escrituras pasan por `cloudWrite()`. Sin conexión se guardan en `localStorage` (`tripflow_cloud_outbox`) y se envían en orden al volver la señal; la sincronización inicial envía la cola antes de descargar para no pisar cambios locales. Cabecera: "Sin conexión · N" / "Enviando N…".
+- Al cambiar de viaje se vuelven a descargar sus datos de la nube (antes solo se descargaba el viaje activo al abrir la app).
+- Carga diferida (`React.lazy`) de Mapa, Billetera, Guía, Checklist, Mis Viajes, asistente y exportación; Tesseract con `import()` dinámico.
+- Verificado con Playwright: la app abre sin red, un ítem añadido offline llega a Supabase al reconectar.
+
+### ✅ v2.3.0: Cabecera compacta y menú de cuenta (Noviembre 2026)
+- `Header.tsx` reescrito (338 → ~150 líneas) + `header/UserMenu.tsx` (avatar con Mi cuenta, Novedades y Cerrar sesión) + `header/RateEditor.tsx` (cotización editable en panel). En móvil ocupa ~1/4 de pantalla en lugar de casi toda.
+- Botón de cerrar unificado para todos los modales (`btn-modal-close` no tenía estilos), estilos para `btn-danger` / `btn-block`, y animaciones `animate-fade-in` / `animate-scale-up` que no estaban definidas.
 
 ### ✅ v2.2.0: "Cómo llegar" desde la ubicación del usuario (Noviembre 2026)
 - `src/services/locationService.ts`: estado del permiso (Permissions API, con respaldo para Safari), posición actual, enlaces `google.com/maps/dir` con `origin` = ubicación del usuario y modo (transporte, a pie, auto, bici; se recuerda el último).

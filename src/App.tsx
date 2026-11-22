@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import Header from './components/common/Header';
 import Navigation from './components/common/Navigation';
 import ItineraryView from './components/itinerary/ItineraryView';
-import MapView from './components/MapView';
-import BudgetTracker from './components/wallet/BudgetTracker';
-import SurvivalGuide from './components/SurvivalGuide';
-import ChecklistView from './components/ChecklistView';
-import TripsDashboard from './components/trips/TripsDashboard';
+import TabLoading from './components/common/TabLoading';
 import ActivityModal from './components/modals/ActivityModal';
 import AuthModal from './components/auth/AuthModal';
+import NewPasswordModal from './components/auth/NewPasswordModal';
 import TripSelectorModal from './components/trips/TripSelectorModal';
-import CreateTripWizard from './components/trips/CreateTripWizard';
 import UpdateModal from './components/updates/UpdateModal';
 import UpdateBannerPill from './components/updates/UpdateBannerPill';
-import ExportModal from './components/export/ExportModal';
 import DirectionsProvider from './components/directions/DirectionsProvider';
 import { useTripData } from './hooks/useTripData';
 import { useAppUpdate } from './hooks/useAppUpdate';
+import { OWNER_USER_ID } from './types/user';
+
+// Pestañas y modales pesados: se descargan solo cuando se usan (el Service Worker los guarda para offline)
+const MapView = lazy(() => import('./components/MapView'));
+const BudgetTracker = lazy(() => import('./components/wallet/BudgetTracker'));
+const SurvivalGuide = lazy(() => import('./components/SurvivalGuide'));
+const ChecklistView = lazy(() => import('./components/ChecklistView'));
+const TripsDashboard = lazy(() => import('./components/trips/TripsDashboard'));
+const CreateTripWizard = lazy(() => import('./components/trips/CreateTripWizard'));
+const ExportModal = lazy(() => import('./components/export/ExportModal'));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('itinerario');
@@ -39,17 +44,21 @@ export default function App() {
         onUpdateExchangeRate={trip.handleUpdateExchangeRate}
         cloudSyncStatus={trip.cloudSyncStatus}
         cloudError={trip.cloudError}
+        isOnline={trip.isOnline}
+        pendingCount={trip.pendingCount}
         onNavigateToBudget={() => setActiveTab('gastos')}
         activeTrip={trip.activeTrip}
         onOpenTripSelector={() => trip.setIsTripSelectorOpen(true)}
         user={trip.auth.user}
         onOpenAuthModal={() => trip.setIsAuthModalOpen(true)}
+        onSignOut={trip.auth.signOut}
         onOpenWhatsNew={appUpdate.forceShowWhatsNew}
       />
 
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="main-content-container">
+        <Suspense fallback={<TabLoading />}>
         {activeTab === 'viajes' && (
           <TripsDashboard
             trips={trip.trips}
@@ -119,6 +128,7 @@ export default function App() {
             onDeleteChecklist={trip.handleDeleteChecklist}
           />
         )}
+        </Suspense>
       </main>
 
       {/* Floating pill for users with app already open when an update is detected */}
@@ -147,6 +157,8 @@ export default function App() {
         onDeleteTrip={trip.handleDeleteTrip}
       />
 
+      <Suspense fallback={null}>
+      {trip.isCreateTripOpen && (
       <CreateTripWizard
         isOpen={trip.isCreateTripOpen}
         onClose={() => trip.setIsCreateTripOpen(false)}
@@ -154,20 +166,10 @@ export default function App() {
           trip.handleCreateTrip(newTrip);
           setActiveTab('itinerario');
         }}
-        currentUserId={trip.auth.user?.id || 'user-admin-jools'}
+        currentUserId={trip.auth.user?.id || OWNER_USER_ID}
       />
-
-      <AuthModal
-        isOpen={trip.isAuthModalOpen}
-        onClose={() => trip.setIsAuthModalOpen(false)}
-        user={trip.auth.user}
-        onSignInCredentials={trip.auth.signInWithCredentials}
-        onSignInGoogle={trip.auth.signInWithGoogle}
-        onSignInOtp={trip.auth.signInWithOtp}
-        onSignOut={trip.auth.signOut}
-        onContinueAsGuest={trip.auth.continueAsGuest}
-      />
-
+      )}
+      {isExportOpen && (
       <ExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
@@ -177,6 +179,15 @@ export default function App() {
         exchangeRate={trip.exchangeRate}
         totalSpentLocal={trip.totalSpentARS}
       />
+      )}
+      </Suspense>
+
+      <AuthModal
+        isOpen={trip.isAuthModalOpen}
+        onClose={() => trip.setIsAuthModalOpen(false)}
+        auth={trip.auth}
+      />
+      <NewPasswordModal auth={trip.auth} />
 
       {/* App Update & What's New System */}
       <UpdateModal

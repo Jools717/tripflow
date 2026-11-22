@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Wallet, CheckCircle2, ArrowRightLeft, RefreshCw, ChevronDown, User, Sparkles } from 'lucide-react';
-import { formatCurrency, parseCurrencyNumber, getCurrencyFlag, getCurrencySymbol } from '../../utils/helpers';
+import React from 'react';
+import { Plane, ChevronDown, CheckCircle2, Wallet } from 'lucide-react';
+import { formatCurrency, parseLocalDate, countTripDays } from '../../utils/helpers';
 import { Trip } from '../../types/trip';
 import { UserProfile } from '../../types/user';
-import { fetchLiveExchangeRate } from '../../services/fxRatesService';
+import UserMenu from './header/UserMenu';
+import RateEditor from './header/RateEditor';
 
 interface HeaderProps {
   activitiesCount: number;
@@ -13,13 +14,36 @@ interface HeaderProps {
   onUpdateExchangeRate: (rate: number) => void;
   cloudSyncStatus?: string;
   cloudError?: string | null;
+  isOnline?: boolean;
+  pendingCount?: number;
   onNavigateToBudget: () => void;
   activeTrip?: Trip;
   onOpenTripSelector?: () => void;
   user?: UserProfile | null;
   onOpenAuthModal?: () => void;
+  onSignOut?: () => Promise<void> | void;
   onOpenWhatsNew?: () => void;
 }
+
+const SYNC_LABELS: Record<string, { label: string; tone: string; title: string }> = {
+  connected: { label: 'En la nube', tone: 'ok', title: 'Sincronizado en tiempo real con Supabase' },
+  saving: { label: 'Guardando…', tone: 'busy', title: 'Guardando cambios' },
+  syncing: { label: 'Sincronizando…', tone: 'busy', title: 'Sincronizando datos' },
+  offline: { label: 'Local', tone: 'idle', title: 'Guardando en la memoria del dispositivo' }
+};
+
+/** "10–23 oct 2026" o "28 feb – 5 mar 2027" */
+const formatDateRange = (startIso: string, endIso: string): string => {
+  const s = parseLocalDate(startIso);
+  const e = parseLocalDate(endIso);
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return `${startIso} – ${endIso}`;
+  const month = (d: Date) => d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+  if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
+    return `${s.getDate()}–${e.getDate()} ${month(e)} ${e.getFullYear()}`;
+  }
+  const yearS = s.getFullYear() !== e.getFullYear() ? ` ${s.getFullYear()}` : '';
+  return `${s.getDate()} ${month(s)}${yearS} – ${e.getDate()} ${month(e)} ${e.getFullYear()}`;
+};
 
 export default function Header({
   activitiesCount,
@@ -29,315 +53,103 @@ export default function Header({
   onUpdateExchangeRate,
   cloudSyncStatus = 'offline',
   cloudError = null,
+  isOnline = true,
+  pendingCount = 0,
   onNavigateToBudget,
   activeTrip,
   onOpenTripSelector,
   user,
   onOpenAuthModal,
+  onSignOut,
   onOpenWhatsNew
 }: HeaderProps) {
   const baseCurrency = activeTrip?.baseCurrency || 'USD';
   const localCurrency = activeTrip?.localCurrency || 'ARS';
   const countryCode = activeTrip?.countryCode || 'AR';
 
-  const baseFlag = getCurrencyFlag(baseCurrency, baseCurrency === 'USD' ? 'US' : undefined);
-  const localFlag = getCurrencyFlag(localCurrency, countryCode);
-  const localSymbol = getCurrencySymbol(localCurrency);
-
-  const [rateInput, setRateInput] = useState(exchangeRate ? exchangeRate.toString() : '1540');
-  const [isFetchingRate, setIsFetchingRate] = useState(false);
-  const [rateFeedback, setRateFeedback] = useState<string | null>(null);
-
-  const budgetCap = activeTrip?.budgetTotalBase || 1000;
   const safeRate = exchangeRate && exchangeRate > 0 ? exchangeRate : 1540;
-  const totalSpentUSD = totalSpentARS / safeRate;
-  const remainingUSD = Math.max(0, budgetCap - totalSpentUSD);
-  const budgetPercentage = Math.min(100, Math.round((totalSpentUSD / budgetCap) * 100));
+  const budgetCap = activeTrip?.budgetTotalBase || 1000;
+  const totalSpentBase = totalSpentARS / safeRate;
+  const remainingBase = budgetCap - totalSpentBase;
+  const budgetPct = Math.min(100, Math.round((totalSpentBase / budgetCap) * 100));
+  const meter = budgetPct >= 90 ? 'danger' : budgetPct >= 70 ? 'warning' : 'healthy';
+  const plansPct = activitiesCount > 0 ? Math.round((completedCount / activitiesCount) * 100) : 0;
 
-  useEffect(() => {
-    if (exchangeRate && exchangeRate > 0) {
-      setRateInput(exchangeRate.toString());
-    }
-  }, [exchangeRate]);
-
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setRateInput(val);
-    const parsed = parseCurrencyNumber(val);
-    if (parsed > 0 && onUpdateExchangeRate) {
-      onUpdateExchangeRate(parsed);
-    }
-  };
-
-  const handleRateBlur = () => {
-    const parsed = parseCurrencyNumber(rateInput);
-    if (!parsed || parsed <= 0) {
-      const fallback = (exchangeRate && exchangeRate > 0) ? exchangeRate : 1540;
-      setRateInput(fallback.toString());
-      if (onUpdateExchangeRate) onUpdateExchangeRate(fallback);
-    } else if (onUpdateExchangeRate) {
-      onUpdateExchangeRate(parsed);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-    }
-  };
-
-  const handleQuickPreset = (rate: number) => {
-    setRateInput(rate.toString());
-    if (onUpdateExchangeRate) {
-      onUpdateExchangeRate(rate);
-    }
-  };
-
-  const handleFetchLive = async () => {
-    setIsFetchingRate(true);
-    setRateFeedback(null);
-    try {
-      const res = await fetchLiveExchangeRate(baseCurrency, localCurrency, countryCode);
-      if (res.rate && res.rate > 0) {
-        handleQuickPreset(res.rate);
-        setRateFeedback(`${localFlag} Actualizado: 1 ${baseCurrency} = ${res.rate} ${localCurrency}`);
-        setTimeout(() => setRateFeedback(null), 3500);
-      }
-    } catch {
-      // offline fallback
-    } finally {
-      setIsFetchingRate(false);
-    }
-  };
-
-  const getBudgetMeterClass = () => {
-    if (budgetPercentage >= 90) return 'danger';
-    if (budgetPercentage >= 70) return 'warning';
-    return 'healthy';
-  };
+  const money = (n: number) => formatCurrency(n, baseCurrency, { maximumFractionDigits: 0 });
+  const sync = SYNC_LABELS[cloudSyncStatus] || SYNC_LABELS.offline;
+  const days = activeTrip ? countTripDays(activeTrip.startDate, activeTrip.endDate) : 0;
 
   return (
-    <header className="app-header">
-      <div className="header-backdrop-pattern"></div>
-      <div className="header-container">
-        {/* Brand & Title */}
-        <div className="header-brand">
-          <div className="brand-logo">
-            <span className="arg-flag-indicator">
-              <span className="flag-stripe sky"></span>
-              <span className="flag-sun">{activeTrip?.flagEmoji || localFlag}</span>
-              <span className="flag-stripe sky"></span>
-            </span>
-          </div>
-          <div>
-            <div className="brand-badge-row">
-              {/* Trip Switcher Pill */}
-              <button
-                type="button"
-                className="trip-switcher-badge-btn"
-                onClick={onOpenTripSelector}
-                title="Cambiar o crear viaje"
-              >
-                <span className="trip-flag-icon">{activeTrip?.flagEmoji || localFlag}</span>
-                <span className="trip-title-text">{activeTrip?.title || 'Buenos Aires 2026'}</span>
-                <ChevronDown size={13} className="trip-chevron" />
-              </button>
-
-              {onOpenWhatsNew && (
-                <button
-                  type="button"
-                  className="btn-whats-new-badge"
-                  onClick={onOpenWhatsNew}
-                  title="Ver novedades de la versión v2.0"
-                >
-                  <Sparkles size={11} className="text-amber" />
-                  <span>Novedades v2.0</span>
-                </button>
-              )}
-
-              {cloudError && (
-                <span className="cloud-badge error" title={cloudError} role="alert">
-                  ⚠️ Error al guardar
-                </span>
-              )}
-              {!cloudError && cloudSyncStatus === 'connected' && (
-                <span className="cloud-badge connected" title="Sincronizado en tiempo real con Supabase">
-                  🟢 Nube en Vivo
-                </span>
-              )}
-              {cloudSyncStatus === 'saving' && (
-                <span className="cloud-badge syncing" title="Guardando cambios">
-                  💾 Guardando...
-                </span>
-              )}
-              {cloudSyncStatus === 'syncing' && (
-                <span className="cloud-badge syncing" title="Sincronizando datos">
-                  🔄 Sincronizando...
-                </span>
-              )}
-              {cloudSyncStatus === 'offline' && (
-                <span className="cloud-badge offline" title="Guardando en la memoria del dispositivo">
-                  💾 Local
-                </span>
-              )}
-            </div>
-
-            <div className="brand-title-flow-row">
-              <span className="brand-app-name">TripFlow</span>
-              <span className="brand-dot-separator">•</span>
-              <h1 className="brand-title">{activeTrip?.destinationCity ? `${activeTrip.destinationCity}` : 'Buenos Aires'}</h1>
-            </div>
-            <p className="brand-subtitle">
-              {activeTrip 
-                ? `${activeTrip.startDate} al ${activeTrip.endDate} • ${activeTrip.flagEmoji || localFlag} ${activeTrip.title}` 
-                : '10 al 23 de Octubre • 🇦🇷 Buenos Aires 2026'}
-            </p>
-          </div>
-        </div>
-
-        {/* Stats Badges + Interactive Wallet Widget ($1,000 USD Cap) */}
-        <div className="header-stats">
-          <div className="stat-pill">
-            <Calendar className="stat-icon text-sky" size={16} />
-            <div className="stat-text">
-              <span className="stat-label">Llegada</span>
-              <span className="stat-value">{activeTrip ? activeTrip.startDate : '10 Oct · 05:30 AM'}</span>
-            </div>
+    <header className="app-header tf-header">
+      <div className="tf-header-inner">
+        {/* Barra superior: marca · selector de viaje · estado · cuenta */}
+        <div className="tf-topbar">
+          <div className="tf-brand">
+            <span className="tf-logo" aria-hidden="true"><Plane size={17} /></span>
+            <span className="tf-brand-name tf-hide-xs">TripFlow</span>
           </div>
 
-          <div className="stat-pill">
-            <CheckCircle2 className="stat-icon text-emerald" size={16} />
-            <div className="stat-text">
-              <span className="stat-label">Planes</span>
-              <span className="stat-value">{completedCount}/{activitiesCount} listos</span>
-            </div>
-          </div>
-
-          <div
-            className={`stat-pill wallet-header-pill ${getBudgetMeterClass()}`}
-            onClick={onNavigateToBudget}
-            title="Haz clic para ver el desglose en Gastos & Billetera"
-            role="button"
-            tabIndex={0}
-          >
-            <div className="wallet-icon-wrapper">
-              <Wallet size={18} className="wallet-icon" />
-            </div>
-            <div className="stat-text wallet-stat-text">
-              <div className="wallet-labels-row">
-                <span className="stat-label">
-                  Billetera ({baseFlag} Tope ${budgetCap} {baseCurrency})
-                </span>
-                <span className="wallet-remaining-tag">
-                  Quedan {baseFlag} ${Math.round(remainingUSD)} {baseCurrency}
-                </span>
-              </div>
-              <div className="wallet-values-row">
-                <span className="wallet-usd-val">
-                  {baseFlag} ${Math.round(totalSpentUSD)} <small className="usd-cap">/ ${budgetCap} {baseCurrency}</small>
-                </span>
-                <span className="wallet-ars-val">
-                  ({localFlag} {formatCurrency(totalSpentARS, localCurrency)})
-                </span>
-              </div>
-              <div className="header-budget-track">
-                <div
-                  className={`header-budget-bar ${getBudgetMeterClass()}`}
-                  style={{ width: `${budgetPercentage}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Profile / Auth Button */}
-          <button
-            type="button"
-            className={`header-auth-btn ${user ? 'logged-in' : ''} ${user?.role === 'admin' ? 'admin' : ''}`}
-            onClick={onOpenAuthModal}
-            title={user ? `Sesión iniciada como: ${user.displayName || user.email}` : 'Iniciar sesión para sincronizar'}
-          >
-            <User size={15} />
-            <span className="auth-btn-label">
-              {user ? (user.displayName || user.email?.split('@')[0]) : 'Iniciar Sesión'}
-            </span>
+          <button type="button" className="tf-trip-switcher" onClick={onOpenTripSelector} title="Cambiar o crear viaje">
+            <span className="tf-trip-flag">{activeTrip?.flagEmoji || '✈️'}</span>
+            <span className="tf-trip-name">{activeTrip?.title || 'Mi viaje'}</span>
+            <ChevronDown size={15} />
           </button>
+
+          <div className="tf-topbar-end">
+            {cloudError ? (
+              <span className="tf-sync error" title={cloudError} role="alert">
+                <span className="tf-sync-dot" /> <span>Error al guardar</span>
+              </span>
+            ) : !isOnline ? (
+              <span className="tf-sync no-connection" title="Sin internet: los cambios se guardan en el teléfono y se enviarán al volver la señal">
+                <span className="tf-sync-dot" /> <span>Sin conexión{pendingCount > 0 ? ` · ${pendingCount}` : ''}</span>
+              </span>
+            ) : pendingCount > 0 ? (
+              <span className="tf-sync busy" title="Enviando a la nube los cambios hechos sin conexión">
+                <span className="tf-sync-dot" /> <span>Enviando {pendingCount}…</span>
+              </span>
+            ) : (
+              <span className={`tf-sync ${sync.tone}`} title={sync.title}>
+                <span className="tf-sync-dot" /> <span className="tf-hide-sm">{sync.label}</span>
+              </span>
+            )}
+            <UserMenu user={user} onOpenAuthModal={onOpenAuthModal} onSignOut={onSignOut} onOpenWhatsNew={onOpenWhatsNew} />
+          </div>
         </div>
 
-        {/* Input de Cotización de Moneda con Banderas */}
-        <div className="header-currency-widget">
-          <div className="currency-widget-top">
-            <div className="currency-widget-title">
-              <ArrowRightLeft size={13} className="text-sky" />
-              <span>
-                Cotización: {baseFlag} {baseCurrency} ➔ {localFlag} {localCurrency}
-                {countryCode === 'AR' && ' (Dólar Blue)'}
+        {/* Destino, fechas e indicadores */}
+        <div className="tf-trip-row">
+          <div className="tf-trip-info">
+            <h1>{activeTrip?.destinationCity || 'Mi viaje'}</h1>
+            {activeTrip && (
+              <p>{formatDateRange(activeTrip.startDate, activeTrip.endDate)} · {days} {days === 1 ? 'día' : 'días'}</p>
+            )}
+          </div>
+
+          <div className="tf-stats">
+            <div className="tf-stat">
+              <span className="tf-stat-label"><CheckCircle2 size={12} /> Planes</span>
+              <span className="tf-stat-value">{completedCount}<small>/{activitiesCount}</small></span>
+              <span className="tf-stat-bar"><span className="healthy" style={{ width: `${plansPct}%` }} /></span>
+            </div>
+
+            <button type="button" className={`tf-stat tf-stat-wallet ${meter}`} onClick={onNavigateToBudget} title="Ver Billetera">
+              <span className="tf-stat-label"><Wallet size={12} /> Billetera</span>
+              <span className="tf-stat-value">{money(totalSpentBase)}<small> / {money(budgetCap)}</small></span>
+              <span className="tf-stat-bar"><span className={meter} style={{ width: `${budgetPct}%` }} /></span>
+              <span className="tf-stat-sub">
+                {remainingBase >= 0 ? `Quedan ${money(remainingBase)}` : `Excedido ${money(-remainingBase)}`}
               </span>
-            </div>
-            
-            <button
-              type="button"
-              className="btn-header-live-rate"
-              onClick={handleFetchLive}
-              disabled={isFetchingRate}
-              title={`Consultar precio en vivo de ${baseCurrency} a ${localCurrency}`}
-            >
-              <RefreshCw size={11} className={isFetchingRate ? 'spin-icon' : ''} />
-              <span>{isFetchingRate ? 'Consultando...' : 'En vivo'}</span>
             </button>
+
+            <RateEditor
+              exchangeRate={safeRate}
+              baseCurrency={baseCurrency}
+              localCurrency={localCurrency}
+              countryCode={countryCode}
+              onUpdateExchangeRate={onUpdateExchangeRate}
+            />
           </div>
-
-          {rateFeedback && (
-            <div className="rate-feedback-toast animate-fade-in">
-              <span>{rateFeedback}</span>
-            </div>
-          )}
-
-          <div className="currency-widget-inputs-row">
-            <div className="fixed-usd-tag">
-              <span className="usd-flag">{baseFlag}</span>
-              <span className="usd-text">1 {baseCurrency}</span>
-              <span className="currency-equals-sign">=</span>
-            </div>
-
-            <div className="currency-input-pill ars-pill">
-              <span className="pill-currency-flag">{localFlag}</span>
-              <span className="pill-currency-symbol">{localSymbol}</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={rateInput}
-                onChange={handleRateChange}
-                onBlur={handleRateBlur}
-                onKeyDown={handleKeyDown}
-                placeholder="1"
-                className="currency-input-field ars"
-                title={`Ajusta el valor en ${localCurrency} de 1 ${baseCurrency}`}
-                aria-label={`${localCurrency} por 1 ${baseCurrency}`}
-              />
-              <span className="pill-currency-code">{localCurrency}</span>
-            </div>
-          </div>
-
-          {countryCode === 'AR' && (
-            <div className="currency-widget-presets">
-              <button
-                type="button"
-                className={`widget-preset-chip ${Number(exchangeRate) === 1540 ? 'active' : ''}`}
-                onClick={() => handleQuickPreset(1540)}
-                title="Precio de compra en cuevas (cambiar USD a ARS)"
-              >
-                🇦🇷 1.540 (Compra)
-              </button>
-              <button
-                type="button"
-                className={`widget-preset-chip ${Number(exchangeRate) === 1560 ? 'active' : ''}`}
-                onClick={() => handleQuickPreset(1560)}
-                title="Precio de venta en cuevas"
-              >
-                🇦🇷 1.560 (Venta)
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </header>

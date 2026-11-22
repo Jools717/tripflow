@@ -20,6 +20,7 @@ import {
   computeUpdatedExpenseSync
 } from '../services/mirrorSyncService';
 import { parseCurrencyNumber, isActivityTrackedInExpenses } from '../utils/helpers';
+import { OWNER_USER_ID } from '../types/user';
 
 interface UseWalletOptions {
   activities: Activity[];
@@ -55,7 +56,7 @@ export function useWallet({
     const expenseWithTrip: Expense = {
       ...expense,
       tripId: expense.tripId || activeTripId || 'trip-ba-2026',
-      userId: expense.userId || userId || 'user-admin-jools'
+      userId: expense.userId || userId || OWNER_USER_ID
     };
 
     setExpenses(prev => [expenseWithTrip, ...prev]);
@@ -65,7 +66,7 @@ export function useWallet({
       mediaWithTrip = {
         ...mediaItem,
         tripId: mediaItem.tripId || activeTripId || 'trip-ba-2026',
-        userId: mediaItem.userId || userId || 'user-admin-jools'
+        userId: mediaItem.userId || userId || OWNER_USER_ID
       };
       setReceipts(prev => [mediaWithTrip!, ...prev]);
     }
@@ -140,7 +141,7 @@ export function useWallet({
     const catWithTrip: ExpenseCategory = {
       ...newCat,
       tripId: newCat.tripId || activeTripId || 'trip-ba-2026',
-      userId: newCat.userId || userId || 'user-admin-jools'
+      userId: newCat.userId || userId || OWNER_USER_ID
     };
     setCategories(prev => [...prev, catWithTrip]);
     if (isSupabaseConfigured) {
@@ -175,7 +176,7 @@ export function useWallet({
     const itemWithTrip: ChecklistItem = {
       ...item,
       tripId: item.tripId || activeTripId || 'trip-ba-2026',
-      userId: item.userId || userId || 'user-admin-jools'
+      userId: item.userId || userId || OWNER_USER_ID
     };
     setChecklist(prev => [itemWithTrip, ...prev]);
     if (isSupabaseConfigured) {

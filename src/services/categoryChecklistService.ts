@@ -1,5 +1,5 @@
 import { ExpenseCategory, ChecklistItem } from '../types/category';
-import { reportCloudError } from './cloudErrors';
+import { cloudWrite } from './cloudQueue';
 import { DbCategoryRow, DbChecklistRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -45,26 +45,26 @@ export const dbToChecklist = (row: DbChecklistRow): ChecklistItem => ({
 
 export const insertCategoryDb = async (cat: ExpenseCategory): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('insert expense_categories', (await supabase.from('expense_categories').insert(categoryToDb(cat))).error);
+  await cloudWrite('insert expense_categories', { table: 'expense_categories', action: 'insert', values: categoryToDb(cat) });
 };
 
 export const deleteCategoryDb = async (catId: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('delete expense_categories', (await supabase.from('expense_categories').delete().eq('id', catId)).error);
+  await cloudWrite('delete expense_categories', { table: 'expense_categories', action: 'delete', match: { column: 'id', eq: catId } });
 };
 
 export const insertChecklistDb = async (item: ChecklistItem): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('insert checklist', (await supabase.from('checklist').insert(checklistToDb(item))).error);
+  await cloudWrite('insert checklist', { table: 'checklist', action: 'insert', values: checklistToDb(item) });
 };
 
 export const updateChecklistCompletedDb = async (id: string, completed: boolean): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('update checklist', (await supabase.from('checklist').update({ completed }).eq('id', id)).error);
+  await cloudWrite('update checklist', { table: 'checklist', action: 'update', values: { completed }, match: { column: 'id', eq: id } });
 };
 
 export const deleteChecklistDb = async (id: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('delete checklist', (await supabase.from('checklist').delete().eq('id', id)).error);
+  await cloudWrite('delete checklist', { table: 'checklist', action: 'delete', match: { column: 'id', eq: id } });
 };
 

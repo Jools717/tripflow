@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, Plane, Calendar, DollarSign, MapPin, Sparkles, Search } from 'lucide-react';
 import { Trip, GLOBAL_DESTINATIONS } from '../../types/trip';
+import { OWNER_USER_ID } from '../../types/user';
 
 interface CreateTripModalProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ export default function CreateTripModal({
 
     const newTrip: Trip = {
       id: 'trip-' + Date.now(),
-      userId: currentUserId || 'user-admin-jools',
+      userId: currentUserId || OWNER_USER_ID,
       title: title.trim() || `Viaje a ${city}`,
       destinationCity: city.trim() || 'Destino',
       countryCode: selectedCountryCode,

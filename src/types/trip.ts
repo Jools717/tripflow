@@ -1,3 +1,4 @@
+import { OWNER_USER_ID } from './user';
 export interface Trip {
   id: string;
   userId?: string | null;
@@ -87,7 +88,7 @@ export const GLOBAL_DESTINATIONS: DestinationCountry[] = [
 
 export const DEFAULT_BA_TRIP: Trip = {
   id: 'trip-ba-2026',
-  userId: 'user-admin-jools',
+  userId: OWNER_USER_ID,
   title: 'Buenos Aires 2026',
   destinationCity: 'Buenos Aires',
   countryCode: 'AR',

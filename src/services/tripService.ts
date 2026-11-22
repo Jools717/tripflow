@@ -1,6 +1,7 @@
 import { Trip, DEFAULT_BA_TRIP } from '../types/trip';
-import { reportCloudError } from './cloudErrors';
+import { cloudWrite } from './cloudQueue';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { OWNER_USER_ID, resolveOwnerId } from '../types/user';
 
 const STORAGE_KEY_TRIPS = 'ba_user_trips';
 const STORAGE_KEY_ACTIVE_TRIP = 'ba_active_trip_id';
@@ -17,7 +18,7 @@ export const loadStoredTrips = (): Trip[] => {
       // Migrate: ensure each trip has a userId
       const migrated = parsed.map((t: Trip) => {
         if (!t.userId || t.id === 'trip-ba-2026') {
-          return { ...t, userId: 'user-admin-jools' };
+          return { ...t, userId: OWNER_USER_ID };
         }
         return t;
       });
@@ -55,7 +56,7 @@ export const saveStoredActiveTripId = (tripId: string): void => {
 
 export const tripToDb = (t: Trip) => ({
   id: t.id,
-  user_id: t.userId || 'user-admin-jools',
+  user_id: resolveOwnerId(t.userId),
   title: t.title,
   destination_city: t.destinationCity,
   country_code: t.countryCode,
@@ -72,7 +73,7 @@ export const tripToDb = (t: Trip) => ({
 
 export const dbToTrip = (row: any): Trip => ({
   id: row.id,
-  userId: row.user_id || 'user-admin-jools',
+  userId: row.user_id || OWNER_USER_ID,
   title: row.title || 'Viaje',
   destinationCity: row.destination_city || '',
   countryCode: row.country_code || 'AR',
@@ -110,7 +111,7 @@ export const fetchTripsDb = async (userId?: string | null): Promise<Trip[] | nul
 export const upsertTripDb = async (trip: Trip): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   try {
-    reportCloudError('upsert trips', (await supabase.from('trips').upsert(tripToDb(trip))).error);
+    await cloudWrite('upsert trips', { table: 'trips', action: 'upsert', values: tripToDb(trip) });
   } catch (err) {
     console.error('Failed to upsert trip in Supabase:', err);
   }
@@ -119,7 +120,7 @@ export const upsertTripDb = async (trip: Trip): Promise<void> => {
 export const deleteTripDb = async (tripId: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   try {
-    reportCloudError('delete trips', (await supabase.from('trips').delete().eq('id', tripId)).error);
+    await cloudWrite('delete trips', { table: 'trips', action: 'delete', match: { column: 'id', eq: tripId } });
   } catch (err) {
     console.error('Failed to delete trip in Supabase:', err);
   }

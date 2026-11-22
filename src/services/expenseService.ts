@@ -1,8 +1,9 @@
 import { ActivityType, PurchaseItem } from '../types/activity';
-import { reportCloudError } from './cloudErrors';
+import { cloudWrite } from './cloudQueue';
 import { Expense, MediaReceipt } from '../types/expense';
 import { DbExpenseRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { OWNER_USER_ID, resolveOwnerId } from '../types/user';
 export {
   DEFAULT_EXPENSE_CATEGORIES,
   categoryToDb,
@@ -37,7 +38,7 @@ export const expenseToDb = (exp: Expense): DbExpenseRow => {
   };
 
   if (exp.tripId) result.trip_id = exp.tripId;
-  if (exp.userId) result.user_id = exp.userId;
+  result.user_id = resolveOwnerId(exp.userId);
   if (exp.currency) result.currency = exp.currency;
   if (exp.activityId) result.activity_id = exp.activityId;
 
@@ -63,7 +64,7 @@ export const dbToExpense = (row: DbExpenseRow): Expense => {
   return {
     id: row.id,
     tripId: row.trip_id || 'trip-ba-2026',
-    userId: row.user_id || 'user-admin-jools',
+    userId: row.user_id || OWNER_USER_ID,
     date: row.date,
     concept: row.concept,
     category: row.category,
@@ -83,26 +84,26 @@ export const dbToExpense = (row: DbExpenseRow): Expense => {
 
 export const upsertExpenseDb = async (expense: Expense): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('upsert expenses', (await supabase.from('expenses').upsert(expenseToDb(expense))).error);
+  await cloudWrite('upsert expenses', { table: 'expenses', action: 'upsert', values: expenseToDb(expense) });
 };
 
 export const insertExpenseDb = async (expense: Expense, mediaItem?: MediaReceipt | null): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   if (mediaItem) {
-    reportCloudError('insert media_manager', (await supabase.from('media_manager').insert(mediaItem)).error);
+    await cloudWrite('insert media_manager', { table: 'media_manager', action: 'insert', values: mediaItem });
   }
-  reportCloudError('insert expenses', (await supabase.from('expenses').insert(expenseToDb(expense))).error);
+  await cloudWrite('insert expenses', { table: 'expenses', action: 'insert', values: expenseToDb(expense) });
 };
 
 export const deleteExpenseDb = async (id: string, receiptId?: string | null): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  reportCloudError('delete expenses', (await supabase.from('expenses').delete().eq('id', id)).error);
+  await cloudWrite('delete expenses', { table: 'expenses', action: 'delete', match: { column: 'id', eq: id } });
   if (receiptId) {
-    reportCloudError('delete media_manager', (await supabase.from('media_manager').delete().eq('uuid', receiptId)).error);
+    await cloudWrite('delete media_manager', { table: 'media_manager', action: 'delete', match: { column: 'uuid', eq: receiptId } });
   }
 };
 
 export const deleteExpensesByIdsDb = async (ids: string[]): Promise<void> => {
   if (!isSupabaseConfigured || !supabase || ids.length === 0) return;
-  reportCloudError('delete expenses', (await supabase.from('expenses').delete().in('id', ids)).error);
+  await cloudWrite('delete expenses', { table: 'expenses', action: 'delete', match: { column: 'id', in: ids } });
 };

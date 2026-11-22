@@ -5,6 +5,7 @@ import {
 import { Trip, GLOBAL_DESTINATIONS } from '../../types/trip';
 import { getCurrencyFlag, getCurrencySymbol, countTripDays } from '../../utils/helpers';
 import { fetchLiveExchangeRate } from '../../services/fxRatesService';
+import { OWNER_USER_ID } from '../../types/user';
 
 interface CreateTripWizardProps {
   isOpen: boolean;
@@ -109,7 +110,7 @@ export default function CreateTripWizard({
     }
     const newTrip: Trip = {
       id: 'trip-' + Date.now(),
-      userId: currentUserId || 'user-admin-jools',
+      userId: currentUserId || OWNER_USER_ID,
       title: title.trim() || `Viaje a ${city}`,
       destinationCity: city.trim() || 'Destino',
       countryCode: selectedCountryCode,

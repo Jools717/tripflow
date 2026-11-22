@@ -1,7 +1,8 @@
 import { Activity, ActivityType, PurchaseItem } from '../types/activity';
-import { reportCloudError } from './cloudErrors';
+import { cloudWrite } from './cloudQueue';
 import { DbActivityRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { OWNER_USER_ID, resolveOwnerId } from '../types/user';
 
 export const activityToDb = (act: Activity): DbActivityRow => {
   let dbDescription = act.description || '';
@@ -31,7 +32,7 @@ export const activityToDb = (act: Activity): DbActivityRow => {
   };
 
   if (act.tripId) result.trip_id = act.tripId;
-  if (act.userId) result.user_id = act.userId;
+  result.user_id = resolveOwnerId(act.userId);
 
   return result;
 };
@@ -59,7 +60,7 @@ export const dbToActivity = (row: DbActivityRow): Activity => {
   return {
     id: row.id,
     tripId: row.trip_id || 'trip-ba-2026',
-    userId: row.user_id || 'user-admin-jools',
+    userId: row.user_id || OWNER_USER_ID,
     dayNumber: Number(row.day_number),
     time: row.time || '10:00',
     period: row.period || 'mañana',
@@ -81,25 +82,21 @@ export const dbToActivity = (row: DbActivityRow): Activity => {
 
 export const upsertActivityDb = async (activity: Activity): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  const { error } = await supabase.from('activities').upsert(activityToDb(activity));
-  reportCloudError('upsert activities', error);
+  await cloudWrite('upsert activities', { table: 'activities', action: 'upsert', values: activityToDb(activity) });
 };
 
 export const insertActivityDb = async (activity: Activity): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  const { error } = await supabase.from('activities').insert(activityToDb(activity));
-  reportCloudError('insert activities', error);
+  await cloudWrite('insert activities', { table: 'activities', action: 'insert', values: activityToDb(activity) });
 };
 
 export const updateActivityFieldsDb = async (id: string, fields: Partial<DbActivityRow>): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  const { error } = await supabase.from('activities').update(fields).eq('id', id);
-  reportCloudError('update activities', error);
+  await cloudWrite('update activities', { table: 'activities', action: 'update', values: fields, match: { column: 'id', eq: id } });
 };
 
 export const deleteActivityDb = async (id: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  const { error } = await supabase.from('activities').delete().eq('id', id);
-  reportCloudError('delete activities', error);
+  await cloudWrite('delete activities', { table: 'activities', action: 'delete', match: { column: 'id', eq: id } });
 };
 

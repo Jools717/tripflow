@@ -1,4 +1,3 @@
-import { createWorker } from 'tesseract.js';
 
 // Month dictionary for Spanish receipt dates (e.g. "OCTUBRE 03 DE" or "03 DE OCTUBRE")
 const MONTH_MAP = {
@@ -152,6 +151,8 @@ export function preprocessCanvasForOcr(sourceCanvas) {
  */
 export async function recognizeReceiptText(imageSource, onProgress) {
   try {
+    // Carga bajo demanda: Tesseract solo se descarga al escanear un ticket
+    const { createWorker } = await import('tesseract.js');
     const worker = await createWorker(['spa', 'eng'], 1, {
       logger: (m) => {
         if (m.status === 'recognizing text' && onProgress && typeof m.progress === 'number') {

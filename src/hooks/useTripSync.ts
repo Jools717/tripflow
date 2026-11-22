@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CLOUD_ERROR_EVENT, CloudErrorDetail } from '../services/cloudErrors';
+import { flushOutbox, getPendingCount, OUTBOX_EVENT } from '../services/cloudQueue';
 import { isSupabaseConfigured } from '../services/supabaseClient';
 import { fetchLiveDolarBlue } from '../services/exchangeRateService';
 import { fetchInitialSupabaseData, subscribeToRealtimeChanges } from '../services/syncService';
@@ -43,6 +44,27 @@ export function useTripSync({
     isSupabaseConfigured ? 'syncing' : 'offline'
   );
   const [cloudError, setCloudError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator === 'undefined' || navigator.onLine !== false);
+  const [pendingCount, setPendingCount] = useState<number>(getPendingCount);
+  const [syncTick, setSyncTick] = useState(0);
+
+  // Conexión: al volver la señal se envían los cambios pendientes y luego se vuelve a sincronizar
+  useEffect(() => {
+    const onOnline = () => {
+      setIsOnline(true);
+      flushOutbox().finally(() => setSyncTick((t) => t + 1));
+    };
+    const onOffline = () => setIsOnline(false);
+    const onOutbox = () => setPendingCount(getPendingCount());
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    window.addEventListener(OUTBOX_EVENT, onOutbox);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener(OUTBOX_EVENT, onOutbox);
+    };
+  }, []);
 
   // Escucha errores de escritura en Supabase y los muestra unos segundos
   useEffect(() => {
@@ -121,9 +143,14 @@ export function useTripSync({
     }, 3500);
 
     setCloudSyncStatus('syncing');
-    fetchInitialSupabaseData(activeTripId)
+    // Primero se envían los cambios hechos sin conexión; si alguno no sale, no se pisa el estado local
+    flushOutbox()
+      .then((flush) => (flush.pending > 0 ? null : fetchInitialSupabaseData(activeTripId)))
       .then((data) => {
-        if (!isMounted) return;
+        if (!isMounted || !data) {
+          if (isMounted) setCloudSyncStatus('connected');
+          return;
+        }
         if (data.activities) setActivities(data.activities);
         if (data.expenses) setExpenses(data.expenses);
         if (data.checklist) setChecklist(data.checklist);
@@ -154,11 +181,13 @@ export function useTripSync({
       isMounted = false;
       unsubscribe();
     };
-  }, [setActivities, setExpenses, setChecklist, setExchangeRate, setCategories, setReceipts]);
+  }, [activeTripId, syncTick, setActivities, setExpenses, setChecklist, setExchangeRate, setCategories, setReceipts]);
 
   return {
     cloudSyncStatus,
     setCloudSyncStatus,
-    cloudError
+    cloudError,
+    isOnline,
+    pendingCount
   };
 }

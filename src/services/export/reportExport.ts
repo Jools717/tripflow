@@ -4,6 +4,7 @@ import { Activity } from '../../types/activity';
 import { Expense } from '../../types/expense';
 import { getExpensePaymentMethod, parseCurrencyNumber } from '../../utils/helpers';
 import { REPORT_CSS } from './reportStyles';
+import { renderMapSection, MAP_CSS, LEAFLET_CSS } from './reportMap';
 import {
   TripExportInput,
   ExportDay,
@@ -102,7 +103,8 @@ export const buildTripReportHtml = (input: TripExportInput): string => {
 
   return `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(trip.title)} · Itinerario TripFlow</title><style>${REPORT_CSS}</style></head>
+<title>${esc(trip.title)} · Itinerario TripFlow</title>
+<link rel="stylesheet" href="${LEAFLET_CSS}" crossorigin=""><style>${REPORT_CSS}${MAP_CSS}</style></head>
 <body>
   <div class="toolbar"><button onclick="window.close()">Cerrar</button><button class="primary" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button></div>
   <header class="hero">
@@ -111,6 +113,7 @@ export const buildTripReportHtml = (input: TripExportInput): string => {
     <div class="sub">${esc(trip.destinationCity)} · ${esc(formatLongDate(trip.startDate))} → ${esc(formatLongDate(trip.endDate))} · ${days.length} días · ${planCount} planes (${doneCount} completados)</div>
   </header>
   ${renderMoney(m)}
+  ${renderMapSection(days)}
   ${renderDays(days, trip.destinationCity, m.localCurrency)}
   ${renderExpenses(expenses, m)}
   <div class="footer">Generado con TripFlow el ${esc(generated)}</div>
@@ -128,8 +131,16 @@ export const openTripReport = (input: TripExportInput): boolean => {
   win.document.write(buildTripReportHtml(input));
   win.document.close();
   win.focus();
-  setTimeout(() => {
+  // Espera a que el mapa termine de cargar (máx. ~6 s) antes de abrir el diálogo de impresión
+  const started = Date.now();
+  const tryPrint = () => {
+    const ready = (win as Window & { __mapReady?: boolean }).__mapReady !== false;
+    if (!ready && Date.now() - started < 6000) {
+      setTimeout(tryPrint, 250);
+      return;
+    }
     try { win.print(); } catch { /* el usuario puede usar el botón del informe */ }
-  }, 450);
+  };
+  setTimeout(tryPrint, 450);
   return true;
 };

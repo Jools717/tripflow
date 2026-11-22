@@ -26,6 +26,7 @@ import { useItinerary } from './useItinerary';
 import { useWallet } from './useWallet';
 import { useAuth } from './useAuth';
 import { parseCurrencyNumber, isActivityTrackedInExpenses } from '../utils/helpers';
+import { OWNER_USER_ID } from '../types/user';
 
 interface UseTripDataOptions {
   onNavigateToTab?: (tab: string) => void;
@@ -69,7 +70,7 @@ export function useTripData(options?: UseTripDataOptions) {
     }
   }, [auth.user]);
 
-  const { cloudSyncStatus, setCloudSyncStatus, cloudError } = useTripSync({
+  const { cloudSyncStatus, setCloudSyncStatus, cloudError, isOnline, pendingCount } = useTripSync({
     activeTripId: activeTrip.id,
     activities,
     setActivities,
@@ -93,7 +94,7 @@ export function useTripData(options?: UseTripDataOptions) {
     setCloudSyncStatus,
     onNavigateToTab: options?.onNavigateToTab,
     activeTripId: activeTrip.id,
-    userId: auth.user?.id || 'user-admin-jools'
+    userId: auth.user?.id || OWNER_USER_ID
   });
 
   const wallet = useWallet({
@@ -108,7 +109,7 @@ export function useTripData(options?: UseTripDataOptions) {
     setExchangeRate,
     setCloudSyncStatus,
     activeTripId: activeTrip.id,
-    userId: auth.user?.id || 'user-admin-jools'
+    userId: auth.user?.id || OWNER_USER_ID
   });
 
   // Cotización por viaje: Buenos Aires usa la cotización global (trip_settings / Dólar Blue);
@@ -143,7 +144,7 @@ export function useTripData(options?: UseTripDataOptions) {
   const handleCreateTrip = async (newTrip: Trip) => {
     const tripWithUser: Trip = {
       ...newTrip,
-      userId: auth.user?.id || 'user-admin-jools'
+      userId: auth.user?.id || OWNER_USER_ID
     };
     const nextTrips = [tripWithUser, ...trips];
     setTrips(nextTrips);
@@ -243,6 +244,8 @@ export function useTripData(options?: UseTripDataOptions) {
     // Overrides por viaje (deben ir después del spread de wallet)
     exchangeRate: effectiveExchangeRate,
     handleUpdateExchangeRate: handleUpdateTripExchangeRate,
-    cloudError
+    cloudError,
+    isOnline,
+    pendingCount
   };
 }

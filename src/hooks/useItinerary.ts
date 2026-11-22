@@ -14,6 +14,7 @@ import {
   removeMirrorExpensesForDeletedActivity
 } from '../services/mirrorSyncService';
 import { parseCurrencyNumber } from '../utils/helpers';
+import { OWNER_USER_ID } from '../types/user';
 
 interface UseItineraryOptions {
   activities: Activity[];
@@ -99,7 +100,7 @@ export function useItinerary({
         ...formData,
         id: editingActivity.id,
         tripId: editingActivity.tripId || activeTripId || 'trip-ba-2026',
-        userId: editingActivity.userId || userId || 'user-admin-jools',
+        userId: editingActivity.userId || userId || OWNER_USER_ID,
         dayNumber: Number(formData.dayNumber || editingActivity.dayNumber || 1),
         costEstimatedARS: cleanCost,
         type: formData.type || editingActivity.type || 'plan',
@@ -117,7 +118,7 @@ export function useItinerary({
       const newActivity: Activity = {
         id: 'act-' + Date.now(),
         tripId: activeTripId || 'trip-ba-2026',
-        userId: userId || 'user-admin-jools',
+        userId: userId || OWNER_USER_ID,
         dayNumber: Number(formData.dayNumber || modalDayNumber || selectedDayNumber || 1),
         time: formData.time || '10:00',
         period: formData.period || 'mañana',

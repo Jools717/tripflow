@@ -8,6 +8,7 @@ import { DEFAULT_EXPENSE_CATEGORIES } from './categoryChecklistService';
 import { Activity } from '../types/activity';
 import { Expense, MediaReceipt } from '../types/expense';
 import { ExpenseCategory, ChecklistItem } from '../types/category';
+import { OWNER_USER_ID } from '../types/user';
 
 const STORAGE_KEYS = [
   'ba_itinerary_activities',
@@ -106,7 +107,7 @@ export const loadStoredActivities = (): Activity[] => {
         return parsed.map(a => ({
           ...a,
           tripId: a.tripId || 'trip-ba-2026',
-          userId: a.userId || 'user-admin-jools'
+          userId: a.userId || OWNER_USER_ID
         }));
       }
     }
@@ -114,7 +115,7 @@ export const loadStoredActivities = (): Activity[] => {
   return INITIAL_ACTIVITIES.map(a => ({
     ...a,
     tripId: 'trip-ba-2026',
-    userId: 'user-admin-jools'
+    userId: OWNER_USER_ID
   }));
 };
 
@@ -127,7 +128,7 @@ export const loadStoredExpenses = (): Expense[] => {
         return parsed.map(e => ({
           ...e,
           tripId: e.tripId || 'trip-ba-2026',
-          userId: e.userId || 'user-admin-jools'
+          userId: e.userId || OWNER_USER_ID
         }));
       }
     }
@@ -135,7 +136,7 @@ export const loadStoredExpenses = (): Expense[] => {
   return INITIAL_EXPENSES.map(e => ({
     ...e,
     tripId: 'trip-ba-2026',
-    userId: 'user-admin-jools'
+    userId: OWNER_USER_ID
   }));
 };
 
@@ -148,7 +149,7 @@ export const loadStoredChecklist = (): ChecklistItem[] => {
         return parsed.map(c => ({
           ...c,
           tripId: c.tripId || 'trip-ba-2026',
-          userId: c.userId || 'user-admin-jools'
+          userId: c.userId || OWNER_USER_ID
         }));
       }
     }
@@ -156,7 +157,7 @@ export const loadStoredChecklist = (): ChecklistItem[] => {
   return INITIAL_CHECKLIST.map(c => ({
     ...c,
     tripId: 'trip-ba-2026',
-    userId: 'user-admin-jools'
+    userId: OWNER_USER_ID
   }));
 };
 
@@ -169,20 +170,20 @@ export const loadStoredCategories = (): ExpenseCategory[] => {
         return parsed.map(cat => ({
           ...cat,
           tripId: cat.tripId || 'trip-ba-2026',
-          userId: cat.userId || 'user-admin-jools'
+          userId: cat.userId || OWNER_USER_ID
         }));
       }
     }
     return DEFAULT_EXPENSE_CATEGORIES.map(cat => ({
       ...cat,
       tripId: 'trip-ba-2026',
-      userId: 'user-admin-jools'
+      userId: OWNER_USER_ID
     }));
   } catch {
     return DEFAULT_EXPENSE_CATEGORIES.map(cat => ({
       ...cat,
       tripId: 'trip-ba-2026',
-      userId: 'user-admin-jools'
+      userId: OWNER_USER_ID
     }));
   }
 };
@@ -196,7 +197,7 @@ export const loadStoredReceipts = (): MediaReceipt[] => {
         return parsed.map(r => ({
           ...r,
           tripId: r.tripId || 'trip-ba-2026',
-          userId: r.userId || 'user-admin-jools'
+          userId: r.userId || OWNER_USER_ID
         }));
       }
     }
