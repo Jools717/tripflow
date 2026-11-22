@@ -93,7 +93,7 @@ src/
 
 ## 💻 Requisitos e Instalación en otra PC
 
-Para instalar y correr el proyecto en cualquier computadora sin complicaciones, consulta también el archivo [`requirements.txt`](./requirements.txt).
+Para instalar y correr el proyecto en cualquier computadora sin complicaciones, consulta también el archivo [`REQUISITOS.txt`](./REQUISITOS.txt).
 
 ### 1. Pre-requisitos de Software
 * **Node.js**: Versión 18.x o 20.x LTS recomendada ([Descargar Node.js](https://nodejs.org/)).

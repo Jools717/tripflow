@@ -43,7 +43,7 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
   - Componentes divididos en microcomponentes (<250 líneas) por dominio: `itinerary/`, `wallet/`, `scanner/`, `modals/`, `common/`.
   - Creación de Custom Hooks especializados (`useTripSync`, `useItinerary`, `useWallet`, `useTripData`) eliminando el *prop drilling*.
   - `App.tsx` reducido de 1.154 líneas a solo 84 líneas.
-  - Creación de `requirements.txt` y documentación completa de compilación sin errores.
+  - Creación de `REQUISITOS.txt` (antes `requirements.txt`; renombrado porque Vercel lo confundía con un proyecto Python) y documentación completa de compilación sin errores.
   - Mantenimiento estricto del archivo madre único de estilos (`src/index.css`).
 
 ---
