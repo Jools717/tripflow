@@ -23,6 +23,7 @@ interface CategoryCalculatorProps {
   category: ExpenseCategory;
   safeRate: number;
   budgetCapUsd: number;
+  showLocalPresets?: boolean;
   onApprove: (data: {
     finalAmount: number;
     concept: string;
@@ -37,6 +38,7 @@ export default function CategoryCalculator({
   category,
   safeRate,
   budgetCapUsd,
+  showLocalPresets = false,
   onApprove
 }: CategoryCalculatorProps) {
   const [calcExpression, setCalcExpression] = useState('');
@@ -48,7 +50,8 @@ export default function CategoryCalculator({
 
   const computedARS = safeEvaluateExpression(calcExpression);
   const computedUSD = safeRate > 0 ? computedARS / safeRate : 0;
-  const presets: CategoryPresetItem[] = CATEGORY_PRESETS[category.id] || GENERIC_PRESETS;
+  // Los precios sugeridos están en pesos argentinos: solo tienen sentido en viajes a Argentina
+  const presets: CategoryPresetItem[] = showLocalPresets ? (CATEGORY_PRESETS[category.id] || GENERIC_PRESETS) : [];
 
   const handleKeyClick = (val: string) => {
     if (val === 'C') {

@@ -52,7 +52,7 @@ export default function TimelineView({
   };
 
   const goToNextDay = () => {
-    if (selectedDayNumber < INITIAL_DAYS.length) setSelectedDayNumber(selectedDayNumber + 1);
+    if (selectedDayNumber < days.length) setSelectedDayNumber(selectedDayNumber + 1);
   };
 
   return (
@@ -60,7 +60,7 @@ export default function TimelineView({
       {/* Horizontal Scrollable Day Carousel */}
       <div className="day-carousel-wrapper">
         <div className="day-carousel">
-          {INITIAL_DAYS.map((d) => {
+          {days.map((d) => {
             const isSelected = d.dayNumber === selectedDayNumber;
             const countForDay = activities.filter(a => a.dayNumber === d.dayNumber).length;
             const isCompletedAll = countForDay > 0 && activities.filter(a => a.dayNumber === d.dayNumber && !a.completed).length === 0;
@@ -162,12 +162,25 @@ export default function TimelineView({
         <div className="departure-alert-card">
           <AlertTriangle className="alert-icon" size={24} />
           <div>
-            <h4>Viernes 23 de Octubre: Día de Despedida</h4>
-            <p>
-              Tal como definiste, este día no tiene planes turísticos pesados: tu vuelo sale a las 3:30 PM.
-              Por el tráfico hacia Ezeiza, sal a más tardar a las 12:30 PM en Cabify/Uber. Dedica la mañana para
-              empacar con tranquilidad y despedirte de tu destino.
-            </p>
+            {currentTimelineDay.date === '2026-10-23' ? (
+              <>
+                {/* Nota personal del viaje original a Buenos Aires */}
+                <h4>Viernes 23 de Octubre: Día de Despedida</h4>
+                <p>
+                  Tal como definiste, este día no tiene planes turísticos pesados: tu vuelo sale a las 3:30 PM.
+                  Por el tráfico hacia Ezeiza, sal a más tardar a las 12:30 PM en Cabify/Uber. Dedica la mañana para
+                  empacar con tranquilidad y despedirte de tu destino.
+                </p>
+              </>
+            ) : (
+              <>
+                <h4>{currentTimelineDay.dateFormatted.replace(/^Día \d+ · /, '')}: Día de regreso</h4>
+                <p>
+                  Último día del viaje. Revisa la hora de tu vuelo o transporte, sal con tiempo y deja la mañana
+                  para empacar con tranquilidad.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

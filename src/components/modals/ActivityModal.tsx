@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, MapPin, Sparkles, ShoppingBag, StickyNote } from 'lucide-react';
 import { Activity, ActivityType, PurchaseItem } from '../../types/activity';
-import { INITIAL_DAYS } from '../../data/initialData';
+import { generateTripDays } from '../../data/initialData';
+import { Trip } from '../../types/trip';
 import { parseCurrencyNumber } from '../../utils/helpers';
 import ComprasItemsBuilder, { EditablePurchaseItem } from './ComprasItemsBuilder';
 import PlanFieldsForm from './PlanFieldsForm';
@@ -13,6 +14,7 @@ interface ActivityModalProps {
   editingActivity: Activity | null;
   currentDayNumber: number;
   exchangeRate?: number;
+  activeTrip?: Trip;
 }
 
 export default function ActivityModal({
@@ -21,6 +23,7 @@ export default function ActivityModal({
   onSave,
   editingActivity,
   currentDayNumber,
+  activeTrip,
   exchangeRate = 1520
 }: ActivityModalProps) {
   const [entryType, setEntryType] = useState<ActivityType>('plan');
@@ -225,9 +228,9 @@ export default function ActivityModal({
               onChange={(e) => setFormData({ ...formData, dayNumber: Number(e.target.value) })}
               className="form-select"
             >
-              {INITIAL_DAYS.map((d) => (
+              {generateTripDays(activeTrip).map((d) => (
                 <option key={d.dayNumber} value={d.dayNumber}>
-                  Día {d.dayNumber} · {d.dateFormatted} ({d.barrioPrincipal})
+                  {d.dateFormatted.startsWith('Día') ? d.dateFormatted : `Día ${d.dayNumber} · ${d.dateFormatted}`}
                 </option>
               ))}
             </select>
@@ -265,7 +268,7 @@ export default function ActivityModal({
             </label>
             <input
               type="text"
-              placeholder={entryType === 'compras' ? 'Ej: Compras en Feria de San Telmo' : entryType === 'nota' ? 'Ej: Recordar llevar efectivo sencillo' : 'Ej: Visita al Teatro Colón, Almuerzo en Güerrin...'}
+              placeholder={entryType === 'compras' ? 'Ej: Recuerdos en el mercado' : entryType === 'nota' ? 'Ej: Recordar llevar efectivo' : 'Ej: Visita al museo, almuerzo en el centro...'}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="form-input"

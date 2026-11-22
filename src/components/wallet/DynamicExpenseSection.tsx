@@ -18,6 +18,7 @@ interface DynamicExpenseSectionProps {
   onEditExpense?: (exp: WalletExpenseItem) => void;
   exchangeRate?: number;
   budgetCapUsd?: number;
+  countryCode?: string;
   onViewReceipt: (exp: WalletExpenseItem) => void;
 }
 
@@ -29,6 +30,7 @@ export default function DynamicExpenseSection({
   onEditExpense,
   exchangeRate = 1540,
   budgetCapUsd = 1000,
+  countryCode,
   onViewReceipt
 }: DynamicExpenseSectionProps) {
   const BUDGET_CAP_USD = budgetCapUsd;
@@ -188,6 +190,7 @@ export default function DynamicExpenseSection({
               category={category}
               safeRate={safeRate}
               budgetCapUsd={BUDGET_CAP_USD}
+              showLocalPresets={countryCode === 'AR'}
               onApprove={handleApproveCalculator}
             />
           )}

@@ -216,7 +216,7 @@ export const EXPENSE_CATEGORIES = [
   { id: "gastronomia", name: "Restaurantes & Bares", icon: "Utensils", color: "#f59e0b" },
   { id: "compras", name: "Compras & Feria", icon: "ShoppingBag", color: "#ec4899" },
   { id: "cultura", name: "Entradas & Museos", icon: "Ticket", color: "#8b5cf6" },
-  { id: "transporte", name: "Transporte & SUBE", icon: "Bus", color: "#3b82f6" },
+  { id: "transporte", name: "Transporte", icon: "Bus", color: "#3b82f6" },
   { id: "mercado", name: "Mercado para Casa", icon: "ShoppingCart", color: "#10b981" },
   { id: "varios", name: "Varios & Efectivo", icon: "Receipt", color: "#64748b" }
 ];

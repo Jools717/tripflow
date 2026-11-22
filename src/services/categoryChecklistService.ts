@@ -7,7 +7,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { id: 'mercado', name: 'Mercado de Alimentos', icon: 'ShoppingCart', color: '#10b981', is_default: true },
   { id: 'regalos', name: 'Regalos del Viaje', icon: 'Gift', color: '#ec4899', is_default: true },
   { id: 'gastronomia', name: 'Restaurantes & Bares', icon: 'Utensils', color: '#f59e0b', is_default: true },
-  { id: 'transporte', name: 'Transporte (SUBE/Apps)', icon: 'Bus', color: '#3b82f6', is_default: true },
+  { id: 'transporte', name: 'Transporte', icon: 'Bus', color: '#3b82f6', is_default: true },
   { id: 'cultura', name: 'Entradas & Cultura', icon: 'Ticket', color: '#8b5cf6', is_default: true },
   { id: 'compras', name: 'Compras & Outlets', icon: 'ShoppingBag', color: '#a855f7', is_default: true },
   { id: 'varios', name: 'Varios & Emergencias', icon: 'Receipt', color: '#64748b', is_default: true }

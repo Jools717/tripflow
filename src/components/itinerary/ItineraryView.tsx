@@ -242,6 +242,7 @@ export default function ItineraryView({
       <QuickMoveModal
         quickMoveActivity={quickMoveActivity}
         activities={activities}
+        days={allTripDays}
         onClose={() => setQuickMoveActivity(null)}
         onExecuteQuickMove={executeQuickMove}
       />

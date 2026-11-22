@@ -4,6 +4,8 @@ import {
   Filter, AlertCircle 
 } from 'lucide-react';
 import { ChecklistItem } from '../types/category';
+import { Trip } from '../types/trip';
+import { parseLocalDate } from '../utils/helpers';
 
 export interface ChecklistCategory {
   id: string;
@@ -27,14 +29,20 @@ interface ChecklistViewProps {
   onToggleChecklist: (id: string) => void;
   onAddChecklist: (item: ChecklistItem) => void;
   onDeleteChecklist: (id: string) => void;
+  activeTrip?: Trip;
 }
 
 export default function ChecklistView({
   checklist = [],
   onToggleChecklist,
   onAddChecklist,
-  onDeleteChecklist
+  onDeleteChecklist,
+  activeTrip
 }: ChecklistViewProps) {
+  const arrival = activeTrip ? parseLocalDate(activeTrip.startDate) : null;
+  const arrivalText = arrival && !isNaN(arrival.getTime())
+    ? arrival.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })
+    : '';
   const [newText, setNewText] = useState('');
   const [selectedCatId, setSelectedCatId] = useState('equipaje');
   const [isCustomCat, setIsCustomCat] = useState(false);
@@ -128,7 +136,7 @@ export default function ChecklistView({
             </div>
             <div>
               <h3>Preparativos & Equipaje</h3>
-              <p>Checklist para tener todo listo antes de aterrizar en Ezeiza el 10 de octubre.</p>
+              <p>Checklist para tener todo listo antes de llegar{activeTrip?.destinationCity ? ` a ${activeTrip.destinationCity}` : ''}{arrivalText ? ` el ${arrivalText}` : ''}.</p>
             </div>
           </div>
           <div className="progress-badge">

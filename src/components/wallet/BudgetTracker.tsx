@@ -208,6 +208,7 @@ export default function BudgetTracker({
             onEditExpense={(exp: WalletExpenseItem) => setEditingExpenseItem(exp)}
             exchangeRate={exchangeRate}
             budgetCapUsd={budgetCapUSD}
+            countryCode={activeTrip?.countryCode}
             onViewReceipt={handleOpenReceipt}
           />
         )

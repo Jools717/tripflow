@@ -159,6 +159,7 @@ export default function TripApp({ auth }: { auth: AuthApi }) {
             onToggleChecklist={trip.handleToggleChecklist}
             onAddChecklist={trip.handleAddChecklist}
             onDeleteChecklist={trip.handleDeleteChecklist}
+            activeTrip={trip.activeTrip}
           />
         )}
         </Suspense>
@@ -178,6 +179,7 @@ export default function TripApp({ auth }: { auth: AuthApi }) {
         editingActivity={trip.editingActivity}
         currentDayNumber={trip.modalDayNumber}
         exchangeRate={trip.exchangeRate}
+        activeTrip={trip.activeTrip}
       />
 
       <TripSelectorModal

@@ -259,7 +259,7 @@ export default function ScannerReviewForm({
 
           {parsedAmountARS > 0 && (
             <div className="scanner-dual-preview">
-              <span>Equivalente en Dólar Blue:</span>
+              <span>Equivalente en USD:</span>
               <strong className="text-emerald">≈ ${computedUSD.toFixed(1)} USD</strong>
               <span>({formatCurrencyARS(parsedAmountARS)})</span>
             </div>

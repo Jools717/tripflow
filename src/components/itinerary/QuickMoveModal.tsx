@@ -1,11 +1,12 @@
 import React from 'react';
 import { ArrowRightLeft, MapPin, X } from 'lucide-react';
 import { Activity } from '../../types/activity';
-import { INITIAL_DAYS } from '../../data/initialData';
+import { DayInfo } from '../../data/initialData';
 
 interface QuickMoveModalProps {
   quickMoveActivity: Activity | null;
   activities: Activity[];
+  days: DayInfo[];
   onClose: () => void;
   onExecuteQuickMove: (targetDayNum: number) => void;
 }
@@ -13,6 +14,7 @@ interface QuickMoveModalProps {
 export default function QuickMoveModal({
   quickMoveActivity,
   activities,
+  days,
   onClose,
   onExecuteQuickMove
 }: QuickMoveModalProps) {
@@ -44,7 +46,7 @@ export default function QuickMoveModal({
 
         <div className="quick-move-body">
           <div className="quick-move-days-grid">
-            {INITIAL_DAYS.map((d) => {
+            {days.map((d) => {
               const isCurrent = d.dayNumber === quickMoveActivity.dayNumber;
               const dayPlansCount = activities.filter(a => a.dayNumber === d.dayNumber).length;
 
