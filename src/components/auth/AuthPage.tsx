@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plane, CalendarDays, Wallet, WifiOff, Navigation } from 'lucide-react';
+import { CalendarDays, Wallet, WifiOff, Navigation } from 'lucide-react';
+import { Wordmark } from '../common/Logo';
 import { AuthApi } from '../../hooks/useAuth';
 import AuthPanel from './AuthPanel';
 
@@ -16,8 +17,7 @@ export default function AuthPage({ auth }: { auth: AuthApi }) {
     <div className="tf-auth-page">
       <aside className="tf-auth-hero">
         <div className="tf-auth-hero-brand">
-          <span className="tf-logo lg" aria-hidden="true"><Plane size={22} /></span>
-          <span className="tf-auth-hero-name">TripFlow</span>
+          <Wordmark tone="light" className="tf-wordmark-hero" />
         </div>
         <h2 className="tf-auth-hero-title">Planifica, viaja y controla tus gastos en un solo lugar.</h2>
         <ul className="tf-auth-hero-list">

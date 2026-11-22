@@ -27,7 +27,7 @@ export default function PlanFieldsForm({
             <option value="naturaleza">Parques & Naturaleza</option>
             <option value="vida_nocturna">Vida Nocturna & Bares</option>
             <option value="transporte">Transporte & Traslados</option>
-            <option value="mercado">Mercado Casa de Amiga</option>
+            <option value="mercado">Mercado / Supermercado</option>
             <option value="compras">Compras & Alfajores</option>
             <option value="relax">Descanso & Hogar</option>
           </select>
@@ -36,7 +36,7 @@ export default function PlanFieldsForm({
           <label>Barrio / Zona</label>
           <input
             type="text"
-            placeholder="Ej: San Telmo, Palermo, Recoleta..."
+            placeholder="Ej: Centro histórico, zona del hotel..."
             value={formData.barrio}
             onChange={(e) => setFormData({ ...formData, barrio: e.target.value })}
             className="form-input"
@@ -45,10 +45,10 @@ export default function PlanFieldsForm({
       </div>
 
       <div className="form-group">
-        <label>Dirección o Nombre del Lugar en Buenos Aires</label>
+        <label>Dirección o nombre del lugar</label>
         <input
           type="text"
-          placeholder="Ej: Av. Corrientes 1368, Cerrito 628..."
+          placeholder="Ej: Calle, número y ciudad, o nombre del lugar"
           value={formData.address}
           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
           className="form-input"
@@ -70,10 +70,10 @@ export default function PlanFieldsForm({
       </div>
 
       <div className="form-group">
-        <label>Tip o Recomendación Porteña</label>
+        <label>Tip o recomendación local</label>
         <input
           type="text"
-          placeholder="Ej: Pedir porción de fugazzeta de parado, llevar efectivo..."
+          placeholder="Ej: Llegar temprano, reservar antes, llevar efectivo..."
           value={formData.tip}
           onChange={(e) => setFormData({ ...formData, tip: e.target.value })}
           className="form-input"
@@ -82,7 +82,7 @@ export default function PlanFieldsForm({
 
       <div className="form-row">
         <div className="form-group">
-          <label>Costo Estimado (ARS)</label>
+          <label>Costo estimado (moneda local)</label>
           <input
             type="text"
             inputMode="decimal"
@@ -93,13 +93,13 @@ export default function PlanFieldsForm({
           />
           {parseCurrencyNumber(formData.costEstimatedARS) > 0 && (
             <div className="live-currency-hint">
-              ≈ <strong>${(parseCurrencyNumber(formData.costEstimatedARS) / exchangeRate).toFixed(1)} USD Blue</strong>
+              ≈ <strong>${(parseCurrencyNumber(formData.costEstimatedARS) / exchangeRate).toFixed(1)} USD</strong>
             </div>
           )}
         </div>
 
         <div className="form-group toggle-group-wrapper">
-          <label>¿Va mi amiga?</label>
+          <label>¿Vas acompañado?</label>
           <label className="toggle-switch">
             <input
               type="checkbox"

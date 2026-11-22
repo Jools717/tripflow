@@ -162,9 +162,9 @@ export default function ItineraryView({
             <button
               className={`filter-chip ${filterFriend === 'withFriend' ? 'active' : ''}`}
               onClick={() => setFilterFriend('withFriend')}
-              title="Planes con mi amiga"
+              title="Planes acompañado"
             >
-              👫 Con Amiga
+              👫 Acompañado
             </button>
             <button
               className={`filter-chip ${filterFriend === 'solo' ? 'active' : ''}`}

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Plane } from 'lucide-react';
+import { BrandMark } from './components/common/Logo';
 import { useAuth } from './hooks/useAuth';
 import AuthPage from './components/auth/AuthPage';
 
@@ -9,7 +9,7 @@ const TripApp = lazy(() => import('./TripApp'));
 function Splash() {
   return (
     <div className="tf-splash" role="status" aria-label="Cargando TripFlow">
-      <span className="tf-logo lg"><Plane size={22} /></span>
+      <BrandMark size={56} className="tf-splash-mark" />
     </div>
   );
 }

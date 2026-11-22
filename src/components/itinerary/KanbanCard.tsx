@@ -135,10 +135,10 @@ export default function KanbanCard({
           type="button"
           className={`kcard-friend-pill ${act.withFriend ? 'with-friend' : 'solo'}`}
           onClick={() => onToggleWithFriend(act.id)}
-          title="Alternar si va tu amiga o vas solo"
+          title="Alternar si vas acompañado o solo"
         >
           <Users size={11} />
-          <span>{act.withFriend ? 'Amiga' : 'Solo'}</span>
+          <span>{act.withFriend ? 'Acompañado' : 'Solo'}</span>
         </button>
       </div>
 
@@ -172,7 +172,7 @@ export default function KanbanCard({
           type="button"
           className="kcard-action-btn detail-btn"
           onClick={() => onInspect(act)}
-          title="Ver detalles, cómo llegar en Google Maps y tip porteño"
+          title="Ver detalles, cómo llegar en Google Maps y tip local"
         >
           <Eye size={13} />
           <span>Detalle</span>

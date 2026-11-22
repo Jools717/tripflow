@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plane, MapPin, Wallet, CalendarDays } from 'lucide-react';
+import { BrandMark, Wordmark } from '../common/Logo';
 import { UserProfile } from '../../types/user';
 import UserMenu from '../common/header/UserMenu';
 
@@ -23,8 +24,7 @@ export default function FirstTripScreen({ user, onCreateTrip, onOpenAuthModal, o
     <div className="tf-first-trip">
       <div className="tf-topbar tf-first-trip-bar">
         <div className="tf-brand">
-          <span className="tf-logo" aria-hidden="true"><Plane size={17} /></span>
-          <span className="tf-brand-name">TripFlow</span>
+          <Wordmark />
         </div>
         <div className="tf-topbar-end">
           <UserMenu user={user} onOpenAuthModal={onOpenAuthModal} onSignOut={onSignOut} />
@@ -33,7 +33,7 @@ export default function FirstTripScreen({ user, onCreateTrip, onOpenAuthModal, o
 
       <main className="tf-first-trip-main">
         <div className="tf-first-trip-card">
-          <span className="tf-logo lg" aria-hidden="true"><Plane size={22} /></span>
+          <BrandMark size={56} />
           <h1>{name ? `¡Hola, ${name}!` : '¡Bienvenido a TripFlow!'}</h1>
           <p>Todavía no tienes viajes. Crea el primero en menos de un minuto.</p>
           <ul>

@@ -55,7 +55,7 @@ export default function CategoryExpenseHistory({
 
           <div className="history-total-badge">
             <span className="badge-ars">{formatCurrencyARS(totalCatARS)}</span>
-            <span className="badge-usd">≈ ${totalCatUSD.toFixed(1)} USD Blue</span>
+            <span className="badge-usd">≈ ${totalCatUSD.toFixed(1)} USD</span>
           </div>
         </div>
 
@@ -180,7 +180,7 @@ export default function CategoryExpenseHistory({
 
                   <div className="expense-amounts-box">
                     <span className="amount-ars">{formatCurrencyARS(exp.amountARS)}</span>
-                    <span className="amount-usd">≈ ${expUSD.toFixed(1)} <small>USD Blue</small></span>
+                    <span className="amount-usd">≈ ${expUSD.toFixed(1)} <small>USD</small></span>
                   </div>
 
                   <div className="grocery-item-actions">
@@ -222,7 +222,7 @@ export default function CategoryExpenseHistory({
             <span>Total en {category.name}:</span>
             <div className="footer-dual-totals">
               <strong>{formatCurrencyARS(totalCatARS)}</strong>
-              <span>(≈ ${totalCatUSD.toFixed(1)} USD Blue)</span>
+              <span>(≈ ${totalCatUSD.toFixed(1)} USD)</span>
             </div>
           </div>
         )}

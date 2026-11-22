@@ -84,7 +84,7 @@ export default function InspectActivityModal({
 
             <span className={`friend-toggle-chip ${inspectingActivity.withFriend ? 'with-friend' : 'solo'}`}>
               <Users size={12} />
-              <span>{inspectingActivity.withFriend ? 'Con mi amiga' : 'Solo'}</span>
+              <span>{inspectingActivity.withFriend ? 'Acompañado' : 'Solo'}</span>
             </span>
           </div>
 
@@ -131,12 +131,12 @@ export default function InspectActivityModal({
             <p className="inspect-description">{inspectingActivity.description}</p>
           )}
 
-          {/* Tip Porteño */}
+          {/* Tip local */}
           {inspectingActivity.tip && (
             <div className="act-tip-box">
               <Lightbulb size={16} className="tip-icon" />
               <div className="tip-content">
-                <strong>Tip porteño:</strong> {inspectingActivity.tip}
+                <strong>Tip local:</strong> {inspectingActivity.tip}
               </div>
             </div>
           )}
@@ -149,7 +149,7 @@ export default function InspectActivityModal({
             ) : inspectingActivity.costEstimatedARS > 0 ? (
               <div className="dual-currency-box">
                 <strong className="cost-ars">{formatCurrencyARS(inspectingActivity.costEstimatedARS)}</strong>
-                <span className="cost-usd-blue">≈ {formatCurrencyUSD(inspectingActivity.costEstimatedARS, exchangeRate)} USD Blue</span>
+                <span className="cost-usd-blue">≈ {formatCurrencyUSD(inspectingActivity.costEstimatedARS, exchangeRate)} USD</span>
               </div>
             ) : (
               <strong className="text-emerald">Plan gratuito ($0)</strong>

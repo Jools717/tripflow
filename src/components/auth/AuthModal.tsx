@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Plane, LogOut, ShieldCheck, Mail } from 'lucide-react';
+import { X, LogOut, ShieldCheck, Mail } from 'lucide-react';
+import { BrandMark } from '../common/Logo';
 import { AuthApi } from '../../hooks/useAuth';
 
 interface AuthModalProps {
@@ -19,7 +20,7 @@ export default function AuthModal({ isOpen, onClose, auth }: AuthModalProps) {
     <div className="modal-backdrop-overlay animate-fade-in" onClick={onClose}>
       <div className="tf-auth-card animate-scale-up" role="dialog" aria-modal="true" aria-labelledby="account-title" onClick={(e) => e.stopPropagation()}>
         <div className="tf-auth-head">
-          <span className="tf-logo" aria-hidden="true"><Plane size={17} /></span>
+          <BrandMark size={40} />
           <div>
             <h3 id="account-title">Tu cuenta</h3>
             <p>Sesión iniciada en TripFlow</p>

@@ -32,7 +32,7 @@ export default function CategorySectionHero({
           <h2>{category.name}</h2>
           <p className="section-subtitle">
             Calcula, escanea tickets y registra gastos específicos de {category.name}.
-            Todos los gastos se acumulan en tu <strong>Billetera de $1.000 USD Blue</strong>.
+            Todos los gastos se acumulan en el <strong>presupuesto de tu viaje</strong>.
           </p>
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function CategorySectionHero({
         <div className="section-kpi-pill">
           <span className="kpi-pill-title">Gasto en {category.name}</span>
           <div className="kpi-pill-dual">
-            <span className="kpi-usd">${totalCatUSD.toFixed(1)} <small>USD Blue</small></span>
+            <span className="kpi-usd">${totalCatUSD.toFixed(1)} <small>USD</small></span>
             <span className="kpi-ars">({formatCurrencyARS(totalCatARS)})</span>
           </div>
         </div>

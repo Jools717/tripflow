@@ -31,6 +31,8 @@ export const dbToCategory = (row: DbCategoryRow): ExpenseCategory => ({
 
 export const checklistToDb = (chk: ChecklistItem): DbChecklistRow => ({
   id: chk.id,
+  // Sin trip_id la base de datos no sabe a qué viaje pertenece el ítem
+  ...(chk.tripId ? { trip_id: chk.tripId } : {}),
   text: chk.text,
   category: chk.category,
   completed: Boolean(chk.completed)

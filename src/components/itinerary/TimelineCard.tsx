@@ -85,10 +85,10 @@ export default function TimelineCard({
           <button
             className={`friend-toggle-chip ${act.withFriend ? 'with-friend' : 'solo'}`}
             onClick={() => onToggleWithFriend(act.id)}
-            title="Haz clic para cambiar si va tu amiga o vas solo"
+            title="Haz clic para cambiar si vas acompañado o solo"
           >
             <Users size={13} />
-            <span>{act.withFriend ? 'Con mi amiga' : 'Solo'}</span>
+            <span>{act.withFriend ? 'Acompañado' : 'Solo'}</span>
           </button>
         </div>
 
@@ -140,7 +140,7 @@ export default function TimelineCard({
           <div className="act-tip-box">
             <Lightbulb size={16} className="tip-icon" />
             <div className="tip-content">
-              <strong>Tip porteño:</strong> {act.tip}
+              <strong>Tip local:</strong> {act.tip}
             </div>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function TimelineCard({
             ) : act.costEstimatedARS > 0 ? (
               <div className="dual-currency-box">
                 <span className="cost-ars">{formatCurrencyARS(act.costEstimatedARS)}</span>
-                <span className="cost-usd-blue">≈ {formatCurrencyUSD(act.costEstimatedARS, exchangeRate)} USD Blue</span>
+                <span className="cost-usd-blue">≈ {formatCurrencyUSD(act.costEstimatedARS, exchangeRate)} USD</span>
               </div>
             ) : (
               <span className="cost-free">Plan gratuito / En casa ($0)</span>

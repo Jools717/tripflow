@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plane, ChevronDown, CheckCircle2, Wallet } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Wallet } from 'lucide-react';
+import { BrandMark, Wordmark } from './Logo';
 import { formatCurrency, parseLocalDate, countTripDays } from '../../utils/helpers';
 import { Trip } from '../../types/trip';
 import { UserProfile } from '../../types/user';
@@ -85,8 +86,8 @@ export default function Header({
         {/* Barra superior: marca · selector de viaje · estado · cuenta */}
         <div className="tf-topbar">
           <div className="tf-brand">
-            <span className="tf-logo" aria-hidden="true"><Plane size={17} /></span>
-            <span className="tf-brand-name tf-hide-xs">TripFlow</span>
+            <BrandMark size={34} className="tf-show-xs" />
+            <Wordmark className="tf-hide-xs" />
           </div>
 
           <button type="button" className="tf-trip-switcher" onClick={onOpenTripSelector} title="Cambiar o crear viaje">

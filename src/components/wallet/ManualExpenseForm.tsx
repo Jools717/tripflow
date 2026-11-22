@@ -90,7 +90,7 @@ export default function ManualExpenseForm({
                 className={`curr-btn ${manualCurrency === 'USD' ? 'active' : ''}`}
                 onClick={() => setManualCurrency('USD')}
               >
-                En Dólares (USD Blue)
+                En Dólares (USD)
               </button>
             </div>
           </div>

@@ -96,7 +96,7 @@ export default function ComprasItemsBuilder({
         </div>
         <div className="summary-col-right">
           <span className="summary-total-ars">{formatCurrencyARS(totalItemsARS)}</span>
-          <span className="summary-total-usd">≈ {formatCurrencyUSD(totalItemsARS, exchangeRate)} USD Blue</span>
+          <span className="summary-total-usd">≈ {formatCurrencyUSD(totalItemsARS, exchangeRate)} USD</span>
         </div>
       </div>
 

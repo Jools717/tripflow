@@ -148,7 +148,7 @@ export default function CategoryCalculator({
           <h4>Calculadora de {category.name}</h4>
         </div>
         <span className="calc-helper-tag">
-          Suma operaciones en pesos y visualiza en USD Blue
+          Suma operaciones en moneda local y visualiza en USD
         </span>
       </div>
 
@@ -167,7 +167,7 @@ export default function CategoryCalculator({
           </div>
 
           <div className="calc-usd-conversion-tag">
-            <span>≈ ${computedUSD.toFixed(2)} USD Blue</span>
+            <span>≈ ${computedUSD.toFixed(2)} USD</span>
           </div>
         </div>
 
@@ -349,7 +349,7 @@ export default function CategoryCalculator({
             <span>
               Aprobar e Incluir en Billetera (
               {computedARS > 0 ? formatCurrencyARS(computedARS) : '$0 ARS'}
-              {' '}• ${computedUSD.toFixed(1)} USD Blue)
+              {' '}• ${computedUSD.toFixed(1)} USD)
             </span>
           </button>
         </form>

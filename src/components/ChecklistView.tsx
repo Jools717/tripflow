@@ -18,7 +18,7 @@ export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
   { id: 'documentos', label: 'Documentos', emoji: '📄', color: '#10b981', desc: 'Pasaporte, DNI, seguro médico, reservas' },
   { id: 'tecnologia', label: 'Tecnología', emoji: '📱', color: '#8b5cf6', desc: 'Celular, cargadores, powerbank, adaptador Tipo I' },
   { id: 'dinero', label: 'Dinero & Tarjetas', emoji: '💵', color: '#f59e0b', desc: 'Efectivo USD/ARS, aviso al banco, tarjetas' },
-  { id: 'amiga', label: 'Casa de Amiga', emoji: '🏠', color: '#ec4899', desc: 'Conseguir SUBE, llaves, compras compartidas' },
+  { id: 'amiga', label: 'Alojamiento', emoji: '🏠', color: '#ec4899', desc: 'Reservas, llaves, dirección del alojamiento' },
   { id: 'app', label: 'Apps & Móvil', emoji: '📲', color: '#06b6d4', desc: 'Google Maps, Cabify, guardar app web' }
 ];
 

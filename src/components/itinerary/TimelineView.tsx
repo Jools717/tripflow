@@ -128,7 +128,7 @@ export default function TimelineView({
               <strong>{dayActivities.length}</strong> planes
             </span>
             <span className="mini-stat">
-              <strong>{withFriendInDay}</strong> con mi amiga
+              <strong>{withFriendInDay}</strong> acompañado
             </span>
             <span className="mini-stat">
               <strong>{completedInDay}</strong> listos
@@ -136,7 +136,7 @@ export default function TimelineView({
             {dayTotalCost > 0 && (
               <span className="mini-stat day-cost-mini-stat">
                 Est: <strong>{formatCurrencyARS(dayTotalCost)}</strong>
-                <small className="usd-tag"> (≈ {formatCurrencyUSD(dayTotalCost, exchangeRate)} USD Blue)</small>
+                <small className="usd-tag"> (≈ {formatCurrencyUSD(dayTotalCost, exchangeRate)} USD)</small>
               </span>
             )}
           </div>
@@ -166,7 +166,7 @@ export default function TimelineView({
             <p>
               Tal como definiste, este día no tiene planes turísticos pesados: tu vuelo sale a las 3:30 PM.
               Por el tráfico hacia Ezeiza, sal a más tardar a las 12:30 PM en Cabify/Uber. Dedica la mañana para
-              empacar con tranquilidad y despedirte de tu amiga.
+              empacar con tranquilidad y despedirte de tu destino.
             </p>
           </div>
         </div>

@@ -13399,3 +13399,34 @@ button.tf-stat.open {
   background: var(--pastel-sky);
   color: var(--pastel-sky-text);
 }
+
+/* ---------- Logo TripFlow (la T es un avión) ---------- */
+.tf-brandmark { display: block; flex-shrink: 0; border-radius: 24%; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25); }
+
+.tf-wordmark {
+  display: inline-flex;
+  align-items: flex-end;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.tf-wordmark svg { height: 0.72em; width: auto; margin-right: -0.02em; transform: translateY(-0.02em); }
+.tf-wordmark.brand > span {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tf-wordmark.light > span { color: #ffffff; }
+.tf-wordmark-hero { font-size: 40px; }
+.tf-splash-mark { animation: pulseDot 1.4s ease-in-out infinite; }
+
+.tf-show-xs { display: none; }
+@media (max-width: 420px) {
+  .tf-show-xs { display: block; }
+  .tf-wordmark.tf-hide-xs { display: none; }
+  .tf-wordmark-hero { font-size: 32px; }
+}

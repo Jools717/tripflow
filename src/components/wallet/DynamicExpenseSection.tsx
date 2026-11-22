@@ -138,7 +138,7 @@ export default function DynamicExpenseSection({
             <strong>¡Gasto aprobado e incluido en la Billetera!</strong>
             <span>
               {lastSaved.concept}: <strong>{formatCurrencyARS(lastSaved.amountARS)}</strong>
-              {' '}(≈ ${(lastSaved.amountARS / safeRate).toFixed(1)} USD Blue)
+              {' '}(≈ ${(lastSaved.amountARS / safeRate).toFixed(1)} USD)
             </span>
           </div>
         </div>

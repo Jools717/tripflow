@@ -231,7 +231,7 @@ export default function EditExpenseModal({
 
           <div className="form-group">
             <div className="label-with-rate-row">
-              <label>Monto a registrar en Pesos Argentinos (ARS)</label>
+              <label>Monto a registrar (moneda local)</label>
               <span className="live-rate-sub-tag">1 USD = ${safeRate} ARS</span>
             </div>
 
@@ -251,7 +251,7 @@ export default function EditExpenseModal({
 
             <div className="modal-conversion-preview">
               <span>Equivalente:</span>
-              <strong className="preview-usd">≈ ${liveUSD.toFixed(1)} USD Blue</strong>
+              <strong className="preview-usd">≈ ${liveUSD.toFixed(1)} USD</strong>
               <span className="preview-ars">({formatCurrencyARS(parsedAmountARS)})</span>
             </div>
           </div>

@@ -93,7 +93,7 @@ export default function ReceiptViewerModal({
                   <label>Monto Aprobado a la Billetera</label>
                   <div className="receipt-dual-amounts">
                     <span className="receipt-ars-val">{formatCurrencyARS(expense.amountARS)}</span>
-                    <span className="receipt-usd-val">≈ ${totalUSD.toFixed(1)} USD Blue</span>
+                    <span className="receipt-usd-val">≈ ${totalUSD.toFixed(1)} USD</span>
                   </div>
                 </div>
               </div>
