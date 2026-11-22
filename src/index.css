@@ -13430,3 +13430,12 @@ button.tf-stat.open {
   .tf-wordmark.tf-hide-xs { display: none; }
   .tf-wordmark-hero { font-size: 32px; }
 }
+
+/* Filtros del itinerario en celular */
+@media (max-width: 640px) {
+  .itinerary-quick-actions { flex-direction: column; align-items: stretch; }
+  .itinerary-quick-actions .filter-button-group { width: 100%; overflow: visible; }
+  .itinerary-quick-actions .filter-chip { flex: 1; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+  .itinerary-primary-actions { width: 100%; }
+  .itinerary-primary-actions > button { flex: 1; justify-content: center; }
+}

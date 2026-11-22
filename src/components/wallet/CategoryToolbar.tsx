@@ -35,6 +35,7 @@ interface CategoryToolbarProps {
   activeSubTab: string;
   setActiveSubTab: (tab: string) => void;
   totalUSD: number;
+  budgetCapUsd?: number;
   categories: ExpenseCategory[];
   mergedExpenses: Expense[];
   onDeleteCategory: (catId: string) => void;
@@ -45,6 +46,7 @@ export default function CategoryToolbar({
   activeSubTab,
   setActiveSubTab,
   totalUSD,
+  budgetCapUsd = 1000,
   categories,
   mergedExpenses,
   onDeleteCategory,
@@ -61,7 +63,7 @@ export default function CategoryToolbar({
         >
           <Wallet size={16} />
           <span>Billetera General</span>
-          <span className="toolbar-tab-badge">${Math.round(totalUSD)} / $1.000 USD</span>
+          <span className="toolbar-tab-badge">${Math.round(totalUSD)} / ${Math.round(budgetCapUsd).toLocaleString('es-ES')} USD</span>
         </button>
 
         {/* Dynamic Category Tabs (Mercado, Regalos, Discotecas...) */}

@@ -17,6 +17,7 @@ interface DynamicExpenseSectionProps {
   onDeleteExpense: (id: string, exp: WalletExpenseItem) => void;
   onEditExpense?: (exp: WalletExpenseItem) => void;
   exchangeRate?: number;
+  budgetCapUsd?: number;
   onViewReceipt: (exp: WalletExpenseItem) => void;
 }
 
@@ -27,10 +28,12 @@ export default function DynamicExpenseSection({
   onDeleteExpense,
   onEditExpense,
   exchangeRate = 1540,
+  budgetCapUsd = 1000,
   onViewReceipt
 }: DynamicExpenseSectionProps) {
-  const BUDGET_CAP_USD = 1000;
-  const safeRate = (Number(exchangeRate) && Number(exchangeRate) >= 100) ? Number(exchangeRate) : 1540;
+  const BUDGET_CAP_USD = budgetCapUsd;
+  // Cualquier moneda: el euro o el dólar valen menos de 100 por USD
+  const safeRate = Number(exchangeRate) > 0 ? Number(exchangeRate) : 1;
 
   const [activeTool, setActiveTool] = useState<'calculator' | 'scanner' | 'manual'>('calculator');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'efectivo' | 'tarjeta'>('all');
@@ -127,6 +130,7 @@ export default function DynamicExpenseSection({
         totalCatARS={totalCatARS}
         recordsCount={categoryExpenses.length}
         remainingUSD={remainingUSD}
+        budgetCapUsd={BUDGET_CAP_USD}
       />
 
       {showToast && lastSaved && (

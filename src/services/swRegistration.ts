@@ -1,6 +1,13 @@
 // Registro del Service Worker (modo sin conexión) y detección real de versiones nuevas.
 let registration: ServiceWorkerRegistration | null = null;
 
+// Momento en que la app se abrió o volvió al primer plano. Una versión nueva que llega
+// poco después se aplica sola (nadie está escribiendo); si llega más tarde, se avisa con la píldora.
+let shownAt = Date.now();
+const AUTO_APPLY_WINDOW_MS = 10_000;
+export const isFreshlyOpened = (): boolean => Date.now() - shownAt < AUTO_APPLY_WINDOW_MS;
+const CHECK_EVERY_MS = 30 * 60_000;
+
 const canUseSW = (): boolean =>
   import.meta.env.PROD && typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
 
@@ -28,10 +35,17 @@ export const registerServiceWorker = (onUpdateReady: () => void): void => {
       .then((reg) => {
         registration = reg;
         watch(reg);
-        // Buscar versiones nuevas al volver a la app
+        reg.update().catch(() => {});
+        // Buscar versiones nuevas al volver a la app y cada 30 minutos con la app abierta
         document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible') reg.update().catch(() => {});
+          if (document.visibilityState === 'visible') {
+            shownAt = Date.now();
+            reg.update().catch(() => {});
+          }
         });
+        setInterval(() => {
+          if (document.visibilityState === 'visible') reg.update().catch(() => {});
+        }, CHECK_EVERY_MS);
       })
       .catch((err) => console.warn('Service Worker no registrado:', err));
   };

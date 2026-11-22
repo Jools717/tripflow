@@ -9,6 +9,7 @@ interface CategorySectionHeroProps {
   totalCatARS: number;
   recordsCount: number;
   remainingUSD: number;
+  budgetCapUsd?: number;
 }
 
 export default function CategorySectionHero({
@@ -16,7 +17,8 @@ export default function CategorySectionHero({
   totalCatUSD,
   totalCatARS,
   recordsCount,
-  remainingUSD
+  remainingUSD,
+  budgetCapUsd = 1000
 }: CategorySectionHeroProps) {
   return (
     <div className="dynamic-section-hero" style={{ borderColor: `${category.color}40` }}>
@@ -58,7 +60,7 @@ export default function CategorySectionHero({
           <span className="kpi-pill-title">Disponible en Billetera</span>
           <div className="kpi-pill-dual">
             <span className="kpi-usd text-emerald">${Math.round(remainingUSD)} <small>USD</small></span>
-            <span className="kpi-ars">de $1.000 USD</span>
+            <span className="kpi-ars">de ${Math.round(budgetCapUsd).toLocaleString('es-ES')} USD</span>
           </div>
         </div>
       </div>

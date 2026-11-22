@@ -128,6 +128,7 @@ export default function BudgetTracker({
         activeSubTab={activeSubTab}
         setActiveSubTab={setActiveSubTab}
         totalUSD={totalUSD}
+        budgetCapUsd={budgetCapUSD}
         categories={categories}
         mergedExpenses={mergedExpenses}
         onDeleteCategory={onDeleteCategory}
@@ -206,6 +207,7 @@ export default function BudgetTracker({
             onDeleteExpense={(id: string, exp: Expense) => onDeleteExpense(id, exp)}
             onEditExpense={(exp: WalletExpenseItem) => setEditingExpenseItem(exp)}
             exchangeRate={exchangeRate}
+            budgetCapUsd={budgetCapUSD}
             onViewReceipt={handleOpenReceipt}
           />
         )

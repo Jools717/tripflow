@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { CURRENT_RELEASE } from '../components/updates/versionConfig';
 import { UpdateModalStage } from '../components/updates/UpdateModal';
 import { createSafetyDataBackup } from '../services/storageService';
-import { registerServiceWorker, applyServiceWorkerUpdate } from '../services/swRegistration';
+import { registerServiceWorker, applyServiceWorkerUpdate, isFreshlyOpened } from '../services/swRegistration';
 
 const STORAGE_KEY_SEEN_VERSION = 'ba_last_seen_app_version';
 
@@ -24,8 +24,15 @@ export function useAppUpdate() {
   }, []);
 
   // Detección real: el Service Worker avisa cuando Vercel publicó una versión nueva y ya está descargada
+  // Al abrir o volver a la app se actualiza sola (con copia de seguridad); si ya se está usando, se avisa con la píldora.
   useEffect(() => {
-    registerServiceWorker(() => setHasBackgroundUpdate(true));
+    registerServiceWorker(() => {
+      if (isFreshlyOpened()) {
+        createSafetyDataBackup('auto_update_on_open');
+        if (applyServiceWorkerUpdate()) return;
+      }
+      setHasBackgroundUpdate(true);
+    });
   }, []);
 
   const handleDismissUpdate = () => {

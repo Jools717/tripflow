@@ -32,7 +32,7 @@ export default function EditExpenseModal({
   const [selectedActivityId, setSelectedActivityId] = useState('');
   const [items, setItems] = useState<PurchaseItem[]>([]);
 
-  const safeRate = (Number(exchangeRate) && Number(exchangeRate) >= 100) ? Number(exchangeRate) : 1540;
+  const safeRate = Number(exchangeRate) > 0 ? Number(exchangeRate) : 1;
 
   const isItinerary = Boolean(
     expense?.isFromItinerary ||

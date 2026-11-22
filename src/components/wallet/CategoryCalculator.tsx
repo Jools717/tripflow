@@ -175,7 +175,7 @@ export default function CategoryCalculator({
           <div className="calc-budget-impact">
             <Wallet size={12} />
             <span>
-              Representa el {((computedUSD / budgetCapUsd) * 100).toFixed(1)}% de tu tope de $1.000 USD
+              Representa el {((computedUSD / budgetCapUsd) * 100).toFixed(1)}% de tu tope de ${Math.round(budgetCapUsd).toLocaleString('es-ES')} USD
             </span>
           </div>
         )}
