@@ -30,10 +30,10 @@ export default function ActivityModal({
     time: '11:00',
     period: 'mañana',
     title: '',
-    barrio: 'Palermo',
+    barrio: '',
     category: 'gastronomia',
     address: '',
-    coords: [-34.5880, -58.4300],
+    coords: null, // sin coordenadas: "Cómo llegar" usa la dirección + la ciudad del viaje
     description: '',
     note: '',
     tip: '',
@@ -74,10 +74,10 @@ export default function ActivityModal({
         time: '11:00',
         period: 'mañana',
         title: '',
-        barrio: 'San Telmo',
+        barrio: '',
         category: 'gastronomia',
         address: '',
-        coords: [-34.5880, -58.4300],
+        coords: null,
         description: '',
         note: '',
         tip: '',
@@ -138,8 +138,12 @@ export default function ActivityModal({
       finalCost = Math.max(0, parseCurrencyNumber(formData.costEstimatedARS) || 0);
     }
 
+    // Si se cambió la dirección, las coordenadas antiguas ya no valen
+    const addressChanged = Boolean(editingActivity) && (formData.address || '') !== (editingActivity?.address || '');
+
     onSave({
       ...formData,
+      coords: addressChanged ? null : formData.coords || null,
       type: entryType,
       category: finalCategory,
       items: cleanItems,
