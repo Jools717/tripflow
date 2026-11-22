@@ -1,4 +1,5 @@
 import { ExpenseCategory, ChecklistItem } from '../types/category';
+import { reportCloudError } from './cloudErrors';
 import { DbCategoryRow, DbChecklistRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -44,26 +45,26 @@ export const dbToChecklist = (row: DbChecklistRow): ChecklistItem => ({
 
 export const insertCategoryDb = async (cat: ExpenseCategory): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('expense_categories').insert(categoryToDb(cat));
+  reportCloudError('insert expense_categories', (await supabase.from('expense_categories').insert(categoryToDb(cat))).error);
 };
 
 export const deleteCategoryDb = async (catId: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('expense_categories').delete().eq('id', catId);
+  reportCloudError('delete expense_categories', (await supabase.from('expense_categories').delete().eq('id', catId)).error);
 };
 
 export const insertChecklistDb = async (item: ChecklistItem): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('checklist').insert(checklistToDb(item));
+  reportCloudError('insert checklist', (await supabase.from('checklist').insert(checklistToDb(item))).error);
 };
 
 export const updateChecklistCompletedDb = async (id: string, completed: boolean): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('checklist').update({ completed }).eq('id', id);
+  reportCloudError('update checklist', (await supabase.from('checklist').update({ completed }).eq('id', id)).error);
 };
 
 export const deleteChecklistDb = async (id: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('checklist').delete().eq('id', id);
+  reportCloudError('delete checklist', (await supabase.from('checklist').delete().eq('id', id)).error);
 };
 

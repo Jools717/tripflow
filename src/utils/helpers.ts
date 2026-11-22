@@ -2,6 +2,25 @@
 import { Activity } from '../types/activity';
 import { Expense } from '../types/expense';
 
+/** Convierte 'YYYY-MM-DD' en una fecha local a medianoche (new Date('YYYY-MM-DD') usa UTC y resta un día en América). */
+export const parseLocalDate = (iso: string): Date => {
+  const [y, m, d] = (iso || '').split('-').map(Number);
+  if (!y || !m || !d) return new Date(NaN);
+  return new Date(y, m - 1, d);
+};
+
+/** Formatea una fecha local como 'YYYY-MM-DD' sin pasar por UTC. */
+export const toLocalIsoDate = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Días entre dos fechas 'YYYY-MM-DD', ambos incluidos (mínimo 1). */
+export const countTripDays = (startIso: string, endIso: string): number => {
+  const s = parseLocalDate(startIso);
+  const e = parseLocalDate(endIso);
+  const diff = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+  return Number.isFinite(diff) && diff > 0 ? diff : 1;
+};
+
 export interface CurrencyInfo {
   code: string;
   flag: string;

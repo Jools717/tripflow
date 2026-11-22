@@ -1,4 +1,5 @@
 import { Trip, DEFAULT_BA_TRIP } from '../types/trip';
+import { reportCloudError } from './cloudErrors';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const STORAGE_KEY_TRIPS = 'ba_user_trips';
@@ -109,7 +110,7 @@ export const fetchTripsDb = async (userId?: string | null): Promise<Trip[] | nul
 export const upsertTripDb = async (trip: Trip): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   try {
-    await supabase.from('trips').upsert(tripToDb(trip));
+    reportCloudError('upsert trips', (await supabase.from('trips').upsert(tripToDb(trip))).error);
   } catch (err) {
     console.error('Failed to upsert trip in Supabase:', err);
   }
@@ -118,7 +119,7 @@ export const upsertTripDb = async (trip: Trip): Promise<void> => {
 export const deleteTripDb = async (tripId: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   try {
-    await supabase.from('trips').delete().eq('id', tripId);
+    reportCloudError('delete trips', (await supabase.from('trips').delete().eq('id', tripId)).error);
   } catch (err) {
     console.error('Failed to delete trip in Supabase:', err);
   }

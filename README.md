@@ -1,6 +1,7 @@
-# 🇦🇷 BA 2026 | Mi Itinerario en Buenos Aires (10 al 23 de Octubre)
+# 🌍 TripFlow | Smart Global Travel & Expense Planner
 
-> **Progressive Web App (PWA)** offline-first diseñada a medida para organizar el viaje a Buenos Aires: itinerario interactivo día a día, control de liquidez y presupuesto con cotización en tiempo real, escáner OCR de comprobantes, rutas en transporte público y guía de supervivencia porteña.
+> **Progressive Web App (PWA)** offline-first diseñada para planificar, presupuestar y ejecutar viajes en cualquier destino del mundo (Top 50 países), con itinerario interactivo Kanban/Timeline, control financiero multi-divisa, escáner OCR de tickets, mapas dinámicos y sincronización en la nube con Supabase.  
+> **Viaje Maestro Incluido:** Buenos Aires 2026 (10 al 23 de Octubre) con todas sus 22 actividades, cotización Dólar Blue en vivo y guía porteña completa.
 
 Construida con **React 19**, **TypeScript**, **Vite**, **Supabase** y un diseño visual centralizado en un archivo madre único de estilos (`src/index.css`).
 

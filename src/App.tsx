@@ -13,11 +13,14 @@ import TripSelectorModal from './components/trips/TripSelectorModal';
 import CreateTripWizard from './components/trips/CreateTripWizard';
 import UpdateModal from './components/updates/UpdateModal';
 import UpdateBannerPill from './components/updates/UpdateBannerPill';
+import ExportModal from './components/export/ExportModal';
+import DirectionsProvider from './components/directions/DirectionsProvider';
 import { useTripData } from './hooks/useTripData';
 import { useAppUpdate } from './hooks/useAppUpdate';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('itinerario');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const trip = useTripData({
     onNavigateToTab: setActiveTab
@@ -26,6 +29,7 @@ export default function App() {
   const appUpdate = useAppUpdate();
 
   return (
+    <DirectionsProvider trip={trip.activeTrip}>
     <div className="app-root">
       <Header
         activitiesCount={trip.activities.length}
@@ -34,6 +38,7 @@ export default function App() {
         exchangeRate={trip.exchangeRate}
         onUpdateExchangeRate={trip.handleUpdateExchangeRate}
         cloudSyncStatus={trip.cloudSyncStatus}
+        cloudError={trip.cloudError}
         onNavigateToBudget={() => setActiveTab('gastos')}
         activeTrip={trip.activeTrip}
         onOpenTripSelector={() => trip.setIsTripSelectorOpen(true)}
@@ -73,6 +78,7 @@ export default function App() {
             setSelectedDayNumber={trip.setSelectedDayNumber}
             onMoveActivityDay={trip.handleMoveActivityDay}
             activeTrip={trip.activeTrip}
+            onOpenExport={() => setIsExportOpen(true)}
           />
         )}
 
@@ -162,6 +168,16 @@ export default function App() {
         onContinueAsGuest={trip.auth.continueAsGuest}
       />
 
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        trip={trip.activeTrip}
+        activities={trip.activities}
+        expenses={trip.expenses}
+        exchangeRate={trip.exchangeRate}
+        totalSpentLocal={trip.totalSpentARS}
+      />
+
       {/* App Update & What's New System */}
       <UpdateModal
         isOpen={appUpdate.isUpdateModalOpen}
@@ -172,5 +188,6 @@ export default function App() {
 
       <div className="mobile-bottom-spacer"></div>
     </div>
+    </DirectionsProvider>
   );
 }

@@ -16,42 +16,42 @@ export interface AppRelease {
 }
 
 export const CURRENT_RELEASE: AppRelease = {
-  version: '2.0.0',
+  version: '2.2.0',
   releaseDate: 'Noviembre 2026',
-  title: '¡Bienvenido a la Versión 2.0!',
-  subtitle: 'Hemos transformado la aplicación en una plataforma global más rápida, segura y con soporte multi-destino.',
+  title: 'Versión 2.2: Cómo llegar y Exportar',
+  subtitle: 'Llega a cada plan desde donde estés y lleva tu itinerario a cualquier parte.',
   features: [
     {
-      id: 'multi-trip',
+      id: 'directions',
       icon: 'Globe',
       badge: 'Nuevo',
-      badgeColor: '#10b981',
-      title: 'Plataforma Multi-Viaje',
-      description: 'Crea y gestiona viajes a cualquier parte del mundo (Tokio, París, Madrid, EE.UU.) con selector de destino y monedas locales automáticas.'
+      badgeColor: '#0284c7',
+      title: 'Cómo llegar desde tu ubicación',
+      description: 'Toca "¿Cómo llegar?" en un plan o en el mapa: ve la ruta de Google Maps desde donde estás sin salir de la app, con transporte, a pie, auto o bici.'
     },
     {
-      id: 'auth-cloud',
-      icon: 'User',
-      badge: 'Nuevo',
-      badgeColor: '#0ea5e9',
-      title: 'Inicio de Sesión & Nube',
-      description: 'Conéctate con Google o enlace mágico para respaldar tus itinerarios, compras y gastos en tiempo real entre todos tus dispositivos.'
-    },
-    {
-      id: 'perf-engine',
-      icon: 'Zap',
-      badge: 'Potencia',
-      badgeColor: '#f59e0b',
-      title: 'Motor TypeScript 100%',
-      description: 'Código reestructurado en microcomponentes con React 19 y TypeScript: cero latencia, cálculos de liquidez al milisegundo y máxima fluidez.'
-    },
-    {
-      id: 'ocr-scanner',
+      id: 'export-pdf',
       icon: 'Receipt',
-      badge: 'Mejora',
+      badge: 'Nuevo',
+      badgeColor: '#ef4444',
+      title: 'Informe PDF',
+      description: 'Itinerario día por día con resumen financiero y gastos, listo para imprimir o guardar offline. Botón "Exportar" en el Itinerario.'
+    },
+    {
+      id: 'export-ics-share',
+      icon: 'Zap',
+      badge: 'Nuevo',
+      badgeColor: '#10b981',
+      title: 'Calendario y WhatsApp',
+      description: 'Añade tus planes a Google Calendar, Apple Calendar u Outlook (.ics) o comparte un resumen del viaje por WhatsApp.'
+    },
+    {
+      id: 'fixes-201',
+      icon: 'ShieldCheck',
+      badge: 'Corrección',
       badgeColor: '#8b5cf6',
-      title: 'Escáner OCR Avanzado',
-      description: 'Aplanador de perspectiva de 4 esquinas para tickets arrugados, zoom interactivo y desglose automático de productos y precios.'
+      title: 'Viajes nuevos más fiables',
+      description: 'Cada viaje tiene su propia cotización, las fechas son exactas, el asistente ya no se salta pasos y verás un aviso si algo no se guarda en la nube.'
     }
   ]
 };

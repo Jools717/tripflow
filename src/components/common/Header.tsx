@@ -12,6 +12,7 @@ interface HeaderProps {
   exchangeRate?: number;
   onUpdateExchangeRate: (rate: number) => void;
   cloudSyncStatus?: string;
+  cloudError?: string | null;
   onNavigateToBudget: () => void;
   activeTrip?: Trip;
   onOpenTripSelector?: () => void;
@@ -27,6 +28,7 @@ export default function Header({
   exchangeRate = 1540,
   onUpdateExchangeRate,
   cloudSyncStatus = 'offline',
+  cloudError = null,
   onNavigateToBudget,
   activeTrip,
   onOpenTripSelector,
@@ -153,7 +155,12 @@ export default function Header({
                 </button>
               )}
 
-              {cloudSyncStatus === 'connected' && (
+              {cloudError && (
+                <span className="cloud-badge error" title={cloudError} role="alert">
+                  ⚠️ Error al guardar
+                </span>
+              )}
+              {!cloudError && cloudSyncStatus === 'connected' && (
                 <span className="cloud-badge connected" title="Sincronizado en tiempo real con Supabase">
                   🟢 Nube en Vivo
                 </span>

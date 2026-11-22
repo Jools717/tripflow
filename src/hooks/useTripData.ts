@@ -69,7 +69,7 @@ export function useTripData(options?: UseTripDataOptions) {
     }
   }, [auth.user]);
 
-  const { cloudSyncStatus, setCloudSyncStatus } = useTripSync({
+  const { cloudSyncStatus, setCloudSyncStatus, cloudError } = useTripSync({
     activeTripId: activeTrip.id,
     activities,
     setActivities,
@@ -111,14 +111,33 @@ export function useTripData(options?: UseTripDataOptions) {
     userId: auth.user?.id || 'user-admin-jools'
   });
 
+  // Cotización por viaje: Buenos Aires usa la cotización global (trip_settings / Dólar Blue);
+  // el resto de viajes guarda la suya en trips.exchange_rate para no pisar la de BA.
+  const isBaTrip = activeTrip.id === 'trip-ba-2026';
+  const effectiveExchangeRate = isBaTrip
+    ? exchangeRate
+    : (activeTrip.exchangeRate && activeTrip.exchangeRate > 0 ? activeTrip.exchangeRate : exchangeRate);
+
+  const handleUpdateTripExchangeRate = async (rate: number | string) => {
+    if (isBaTrip) {
+      await wallet.handleUpdateExchangeRate(rate);
+      return;
+    }
+    const validRate = Number(rate);
+    if (!validRate || isNaN(validRate) || validRate < 0.0001) return;
+    const updatedTrip: Trip = { ...activeTrip, exchangeRate: validRate };
+    const nextTrips = trips.map(t => (t.id === updatedTrip.id ? updatedTrip : t));
+    setTrips(nextTrips);
+    saveStoredTrips(nextTrips);
+    setCloudSyncStatus('saving');
+    await upsertTripDb(updatedTrip);
+    setCloudSyncStatus('connected');
+  };
+
   // Trip Handlers
   const handleSelectTrip = (tripId: string) => {
     setActiveTripId(tripId);
     saveStoredActiveTripId(tripId);
-    const chosen = trips.find(t => t.id === tripId);
-    if (chosen && chosen.exchangeRate) {
-      wallet.handleUpdateExchangeRate(chosen.exchangeRate);
-    }
   };
 
   const handleCreateTrip = async (newTrip: Trip) => {
@@ -190,7 +209,6 @@ export function useTripData(options?: UseTripDataOptions) {
     categories: activeCategories.length > 0 ? activeCategories : categories,
     receipts: activeReceipts,
     checklist: activeChecklist.length > 0 ? activeChecklist : checklist,
-    exchangeRate,
     cloudSyncStatus,
 
     // Trips state & handlers
@@ -220,6 +238,11 @@ export function useTripData(options?: UseTripDataOptions) {
     ...itinerary,
 
     // Wallet slice
-    ...wallet
+    ...wallet,
+
+    // Overrides por viaje (deben ir después del spread de wallet)
+    exchangeRate: effectiveExchangeRate,
+    handleUpdateExchangeRate: handleUpdateTripExchangeRate,
+    cloudError
   };
 }

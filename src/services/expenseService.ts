@@ -1,4 +1,5 @@
 import { ActivityType, PurchaseItem } from '../types/activity';
+import { reportCloudError } from './cloudErrors';
 import { Expense, MediaReceipt } from '../types/expense';
 import { DbExpenseRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
@@ -82,26 +83,26 @@ export const dbToExpense = (row: DbExpenseRow): Expense => {
 
 export const upsertExpenseDb = async (expense: Expense): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('expenses').upsert(expenseToDb(expense));
+  reportCloudError('upsert expenses', (await supabase.from('expenses').upsert(expenseToDb(expense))).error);
 };
 
 export const insertExpenseDb = async (expense: Expense, mediaItem?: MediaReceipt | null): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   if (mediaItem) {
-    await supabase.from('media_manager').insert(mediaItem);
+    reportCloudError('insert media_manager', (await supabase.from('media_manager').insert(mediaItem)).error);
   }
-  await supabase.from('expenses').insert(expenseToDb(expense));
+  reportCloudError('insert expenses', (await supabase.from('expenses').insert(expenseToDb(expense))).error);
 };
 
 export const deleteExpenseDb = async (id: string, receiptId?: string | null): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('expenses').delete().eq('id', id);
+  reportCloudError('delete expenses', (await supabase.from('expenses').delete().eq('id', id)).error);
   if (receiptId) {
-    await supabase.from('media_manager').delete().eq('uuid', receiptId);
+    reportCloudError('delete media_manager', (await supabase.from('media_manager').delete().eq('uuid', receiptId)).error);
   }
 };
 
 export const deleteExpensesByIdsDb = async (ids: string[]): Promise<void> => {
   if (!isSupabaseConfigured || !supabase || ids.length === 0) return;
-  await supabase.from('expenses').delete().in('id', ids);
+  reportCloudError('delete expenses', (await supabase.from('expenses').delete().in('id', ids)).error);
 };

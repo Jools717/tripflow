@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { parseLocalDate } from '../../utils/helpers';
 import {
   Plane, Calendar, Plus, Compass, Trash2, ArrowRight, Wallet, CheckCircle2, ShieldCheck, Sparkles, Clock
 } from 'lucide-react';
@@ -38,8 +39,8 @@ export default function TripsDashboard({
 
   const getTripTimingInfo = (trip: Trip) => {
     try {
-      const start = new Date(trip.startDate);
-      const end = new Date(trip.endDate);
+      const start = parseLocalDate(trip.startDate);
+      const end = parseLocalDate(trip.endDate);
       start.setHours(0, 0, 0, 0);
       end.setHours(23, 59, 59, 999);
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, CheckCircle, Plus, Kanban } from 'lucide-react';
+import { Calendar, CheckCircle, Plus, Kanban, Share2 } from 'lucide-react';
 import { Activity } from '../../types/activity';
 import { Trip } from '../../types/trip';
 import { generateTripDays } from '../../data/initialData';
@@ -21,6 +21,7 @@ interface ItineraryViewProps {
   setSelectedDayNumber: (dayNum: number) => void;
   onMoveActivityDay?: (actId: string, targetDayNum: number) => void;
   activeTrip?: Trip;
+  onOpenExport?: () => void;
 }
 
 export default function ItineraryView({
@@ -35,12 +36,13 @@ export default function ItineraryView({
   selectedDayNumber,
   setSelectedDayNumber,
   onMoveActivityDay,
-  activeTrip
+  activeTrip,
+  onOpenExport
 }: ItineraryViewProps) {
   const [viewMode, setViewMode] = useState<'kanban' | 'timeline'>('kanban');
   const [filterFriend, setFilterFriend] = useState<'all' | 'withFriend' | 'solo'>('all');
   const [filterPeriod, setFilterPeriod] = useState<string>('all');
-  const [kanbanWeek, setKanbanWeek] = useState<'all' | 'week1' | 'week2'>('all');
+  const [kanbanWeek, setKanbanWeek] = useState<'all' | number>('all');
 
   const [quickMoveActivity, setQuickMoveActivity] = useState<Activity | null>(null);
   const [inspectingActivity, setInspectingActivity] = useState<Activity | null>(null);
@@ -54,10 +56,13 @@ export default function ItineraryView({
   };
 
   const allTripDays = generateTripDays(activeTrip);
+  const totalDays = allTripDays.length;
+  const weekCount = Math.ceil(totalDays / 7);
+  // Si cambias a un viaje más corto, una semana inexistente vuelve a "Todos"
+  const activeWeek = kanbanWeek !== 'all' && kanbanWeek < weekCount ? kanbanWeek : 'all';
   const visibleDays = allTripDays.filter(d => {
-    if (kanbanWeek === 'week1') return d.dayNumber <= 7;
-    if (kanbanWeek === 'week2') return d.dayNumber >= 8;
-    return true;
+    if (activeWeek === 'all') return true;
+    return d.dayNumber > activeWeek * 7 && d.dayNumber <= (activeWeek + 1) * 7;
   });
 
   const showMoveFeedback = (title: string, dayNum: number) => {
@@ -125,23 +130,24 @@ export default function ItineraryView({
           <div className="kanban-week-filter">
             <span className="filter-label-subtle">Semana:</span>
             <button
-              className={`week-chip ${kanbanWeek === 'all' ? 'active' : ''}`}
+              className={`week-chip ${activeWeek === 'all' ? 'active' : ''}`}
               onClick={() => setKanbanWeek('all')}
             >
-              Todos (14 Días)
+              Todos ({totalDays} {totalDays === 1 ? 'Día' : 'Días'})
             </button>
-            <button
-              className={`week-chip ${kanbanWeek === 'week1' ? 'active' : ''}`}
-              onClick={() => setKanbanWeek('week1')}
-            >
-              Semana 1 (Días 1-7)
-            </button>
-            <button
-              className={`week-chip ${kanbanWeek === 'week2' ? 'active' : ''}`}
-              onClick={() => setKanbanWeek('week2')}
-            >
-              Semana 2 (Días 8-14)
-            </button>
+            {weekCount > 1 && Array.from({ length: weekCount }, (_, w) => {
+              const from = w * 7 + 1;
+              const to = Math.min((w + 1) * 7, totalDays);
+              return (
+                <button
+                  key={w}
+                  className={`week-chip ${activeWeek === w ? 'active' : ''}`}
+                  onClick={() => setKanbanWeek(w)}
+                >
+                  Semana {w + 1} ({from === to ? `Día ${from}` : `Días ${from}-${to}`})
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -169,13 +175,26 @@ export default function ItineraryView({
             </button>
           </div>
 
-          <button
-            className="btn-add-activity"
-            onClick={() => onOpenAddModal(selectedDayNumber)}
-          >
-            <Plus size={16} />
-            <span>Nuevo Plan</span>
-          </button>
+          <div className="itinerary-primary-actions">
+            {onOpenExport && (
+              <button
+                type="button"
+                className="btn-export-trip"
+                onClick={onOpenExport}
+                title="Exportar a PDF, calendario o compartir por WhatsApp"
+              >
+                <Share2 size={16} />
+                <span>Exportar</span>
+              </button>
+            )}
+            <button
+              className="btn-add-activity"
+              onClick={() => onOpenAddModal(selectedDayNumber)}
+            >
+              <Plus size={16} />
+              <span>Nuevo Plan</span>
+            </button>
+          </div>
         </div>
       </div>
 

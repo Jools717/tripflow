@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CLOUD_ERROR_EVENT, CloudErrorDetail } from '../services/cloudErrors';
 import { isSupabaseConfigured } from '../services/supabaseClient';
 import { fetchLiveDolarBlue } from '../services/exchangeRateService';
 import { fetchInitialSupabaseData, subscribeToRealtimeChanges } from '../services/syncService';
@@ -41,6 +42,23 @@ export function useTripSync({
   const [cloudSyncStatus, setCloudSyncStatus] = useState<SyncStatus>(
     isSupabaseConfigured ? 'syncing' : 'offline'
   );
+  const [cloudError, setCloudError] = useState<string | null>(null);
+
+  // Escucha errores de escritura en Supabase y los muestra unos segundos
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onError = (ev: Event) => {
+      const detail = (ev as CustomEvent<CloudErrorDetail>).detail;
+      setCloudError(`No se pudo guardar en la nube (${detail.context}): ${detail.message}`);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setCloudError(null), 12000);
+    };
+    window.addEventListener(CLOUD_ERROR_EVENT, onError);
+    return () => {
+      window.removeEventListener(CLOUD_ERROR_EVENT, onError);
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
 
   // Auto-fetch live Dólar Blue on load
   useEffect(() => {
@@ -140,6 +158,7 @@ export function useTripSync({
 
   return {
     cloudSyncStatus,
-    setCloudSyncStatus
+    setCloudSyncStatus,
+    cloudError
   };
 }

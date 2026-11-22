@@ -5,7 +5,8 @@ import {
   ShoppingBag, StickyNote
 } from 'lucide-react';
 import { Activity } from '../../types/activity';
-import { getGoogleMapsTransitUrl, formatCurrencyARS, formatCurrencyUSD, getCategoryBadge } from '../../utils/helpers';
+import { formatCurrencyARS, formatCurrencyUSD, getCategoryBadge } from '../../utils/helpers';
+import { useDirections } from '../directions/directionsContext';
 
 interface InspectActivityModalProps {
   inspectingActivity: Activity | null;
@@ -24,6 +25,7 @@ export default function InspectActivityModal({
   onDelete,
   onEdit
 }: InspectActivityModalProps) {
+  const openDirections = useDirections();
   if (!inspectingActivity) return null;
 
   const catBadge = getCategoryBadge(inspectingActivity.category);
@@ -156,16 +158,15 @@ export default function InspectActivityModal({
 
           {/* Primary Google Maps Route Button (if not nota) */}
           {inspectingActivity.type !== 'nota' && (
-            <a
-              href={getGoogleMapsTransitUrl(inspectingActivity)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => openDirections(inspectingActivity)}
               className="btn-inspect-maps"
             >
               <NavIcon size={16} />
-              <span>¿Cómo llegar en Subte / Colectivo (Google Maps)?</span>
+              <span>¿Cómo llegar? (Google Maps)</span>
               <ExternalLink size={14} />
-            </a>
+            </button>
           )}
         </div>
 

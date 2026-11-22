@@ -5,7 +5,8 @@ import {
   ShoppingBag, StickyNote
 } from 'lucide-react';
 import { Activity } from '../../types/activity';
-import { getGoogleMapsTransitUrl, formatCurrencyARS, formatCurrencyUSD, getCategoryBadge } from '../../utils/helpers';
+import { formatCurrencyARS, formatCurrencyUSD, getCategoryBadge } from '../../utils/helpers';
+import { useDirections } from '../directions/directionsContext';
 import { getPeriodIcon } from './KanbanCard';
 
 interface TimelineCardProps {
@@ -32,7 +33,7 @@ export default function TimelineCard({
   onDelete
 }: TimelineCardProps) {
   const catBadge = getCategoryBadge(act.category);
-  const mapsUrl = getGoogleMapsTransitUrl(act);
+  const openDirections = useDirections();
 
   return (
     <div className={`activity-card ${act.completed ? 'completed' : ''}`}>
@@ -171,17 +172,16 @@ export default function TimelineCard({
             </button>
 
             {act.type !== 'nota' && (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => openDirections(act)}
                 className="btn-google-maps"
-                title="Abrir en Google Maps con ruta en transporte público (Subte/Colectivo)"
+                title="Ver cómo llegar desde tu ubicación con Google Maps"
               >
                 <NavIcon size={15} />
                 <span>¿Cómo llegar?</span>
                 <ExternalLink size={12} className="external-arrow" />
-              </a>
+              </button>
             )}
 
             {act.coords && (

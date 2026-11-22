@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { reportCloudError } from './cloudErrors';
 
 export const fetchLiveDolarBlue = async (): Promise<number | null> => {
   try {
@@ -18,6 +19,6 @@ export const fetchLiveDolarBlue = async (): Promise<number | null> => {
 
 export const saveExchangeRateDb = async (rate: number): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase.from('trip_settings').upsert({ id: 'config', exchange_rate: rate });
+  reportCloudError('upsert trip_settings', (await supabase.from('trip_settings').upsert({ id: 'config', exchange_rate: rate })).error);
 };
 

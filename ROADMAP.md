@@ -2,7 +2,7 @@
 
 > **Documento de Contexto y Progreso para Desarrolladores y Agentes de IA**  
 > **Última Actualización:** 2 de Noviembre de 2026  
-> **Estado General:** Fases 0, 1, 2, 3, 4, 5 y 6 Completadas al 100% · **Fase 7 en Preparación (Exportación PDF & Calendario)**
+> **Estado General:** Fases 0 a 7 Completadas al 100% · Versión 2.2.0
 
 ---
 
@@ -29,7 +29,7 @@ Evolucionar la aplicación **"Mi Itinerario Buenos Aires 2026"** (una PWA person
 | **Fase 4** | **Dashboard "Mis Viajes"** | Selector de viajes activos, creación asistida en 3 pasos y cambio de contexto | ✅ **COMPLETADO** |
 | **Fase 5** | **Guías y Mapas por Destino** | Módulos dinámicos de transporte/supervivencia local y mapas autoadaptables | ✅ **COMPLETADO** |
 | **Fase 6** | **Colaboración & Cloud Sync** | Migración de base de datos ejecutada, aislamiento por tripId/userId y Realtime | ✅ **COMPLETADO** |
-| **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | 🟡 **SIGUIENTE PASO** |
+| **Fase 7** | **Exportación & Calendario** | Exportar a PDF ejecutivo, sincronizar a Google Calendar / Apple Calendar (.ics) | ✅ **COMPLETADO** |
 
 ---
 
@@ -179,15 +179,37 @@ Transformar la base de datos de producción en Supabase para soportar nativament
 
 ---
 
-### ⚪ Fase 7: Exportación & Calendario
+### ✅ Fase 7: Exportación & Calendario (Completada: Noviembre 2026 · v2.1.0)
 
 #### 🎯 Objetivo
 Permitir que el viajero exporte su itinerario completo en formato imprimible/PDF para llevar en físico u offline, y sincronice sus actividades con Google Calendar / Apple Calendar (.ics).
 
-#### 🛠️ Tareas Clave:
-1. Generación de reporte ejecutivo en PDF con itinerario día por día, mapa de pines y resumen financiero de gastos.
-2. Exportador de eventos `.ics` compatible con Google Calendar, Apple Calendar y Outlook.
-3. Botón de compartir resumen rápido por WhatsApp o portapapeles.
+#### 🛠️ Especificación Detallada y Tareas Ejecutadas:
+- [x] **1. Informe ejecutivo PDF (`src/services/export/reportExport.ts` + `reportStyles.ts`):** ✅
+  - Documento imprimible en ventana aparte (sin dependencias, funciona offline) con resumen financiero (presupuesto, gastado, disponible, cotización, efectivo vs. tarjeta), itinerario día por día con enlaces "Ver mapa" y tabla de gastos.
+  - Se guarda como PDF desde el diálogo de impresión del navegador. Sus estilos viven en `reportStyles.ts` porque es un documento independiente que no carga `index.css`.
+  - *Pendiente:* mapa estático de pines (requiere un servicio de mapas estáticos); se sustituyó por enlaces a Google Maps por actividad.
+- [x] **2. Exportador `.ics` (`src/services/export/icsExport.ts`):** ✅
+  - RFC 5545: líneas plegadas a 75 bytes, CRLF, escapado de texto y `UID` estable por actividad (`<id>@tripflow.app`) para que reimportar actualice en lugar de duplicar.
+  - Horas "flotantes" (sin zona horaria): un plan a las 11:00 queda a las 11:00 en la hora local del teléfono. Actividades sin hora → evento de día completo.
+- [x] **3. Compartir resumen (`src/services/export/shareExport.ts`):** ✅
+  - WhatsApp (`wa.me`, versión compacta automática si supera 3.000 caracteres), menú nativo del celular (`navigator.share`) y copiar al portapapeles.
+- [x] **4. Interfaz (`src/components/export/ExportModal.tsx`):** ✅
+  - Botón **"Exportar"** junto a "Nuevo Plan" en el Itinerario, modal con las 3 opciones y mensajes de confirmación.
+
+### ✅ v2.2.0: "Cómo llegar" desde la ubicación del usuario (Noviembre 2026)
+- `src/services/locationService.ts`: estado del permiso (Permissions API, con respaldo para Safari), posición actual, enlaces `google.com/maps/dir` con `origin` = ubicación del usuario y modo (transporte, a pie, auto, bici; se recuerda el último).
+- `src/components/directions/`: `DirectionsProvider` (contexto `useDirections()` para abrirlo desde cualquier componente), `DirectionsModal` y `LocationHelp` (instrucciones para activar la ubicación en Android / iPhone).
+- Flujo: con permiso → ubica directo; sin permiso → modal explica y pide la ubicación; bloqueada o sin GPS → instrucciones + "Reintentar" + abrir sin ubicación. La ruta se abre con un toque del usuario dentro del modal (un `window.open` tras esperar al GPS lo bloquean los navegadores móviles).
+- Usado en: Vista Día a Día, modal "Detalle" y popups del Mapa. El destino ya no lleva "Argentina" fijo: usa la ciudad y el país del viaje.
+- *Proyecto movido* a `C:\PROJECTS\TYPRESCRIPT\trip-flow` y añadido `CLAUDE.md` con las instrucciones de trabajo.
+
+### ✅ Mantenimiento v2.0.1 (Noviembre 2026)
+- Cotización por viaje: Buenos Aires usa `trip_settings` (Dólar Blue); el resto, `trips.exchange_rate`. Antes, cambiar de viaje sobrescribía la cotización de Buenos Aires en la nube.
+- Fechas en hora local (`parseLocalDate`, `toLocalIsoDate`, `countTripDays` en `helpers.ts`).
+- Asistente de viajes: el paso 3 ya no se salta. Filtro de semanas dinámico.
+- Errores de Supabase visibles: `src/services/cloudErrors.ts` + badge "⚠️ Error al guardar" en el Header.
+- Billetera móvil sin desborde horizontal.
 
 ---
 

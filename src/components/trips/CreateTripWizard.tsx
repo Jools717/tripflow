@@ -3,7 +3,7 @@ import {
   X, Plane, Calendar, DollarSign, MapPin, Sparkles, Search, ArrowRight, ArrowLeft, Check, CheckCircle2
 } from 'lucide-react';
 import { Trip, GLOBAL_DESTINATIONS } from '../../types/trip';
-import { getCurrencyFlag, getCurrencySymbol } from '../../utils/helpers';
+import { getCurrencyFlag, getCurrencySymbol, countTripDays } from '../../utils/helpers';
 import { fetchLiveExchangeRate } from '../../services/fxRatesService';
 
 interface CreateTripWizardProps {
@@ -54,14 +54,7 @@ export default function CreateTripWizard({
   }, [countrySearch]);
 
   const tripDurationDays = useMemo(() => {
-    try {
-      const s = new Date(startDate);
-      const e = new Date(endDate);
-      const diff = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      return Math.max(1, diff || 1);
-    } catch {
-      return 14;
-    }
+    return countTripDays(startDate, endDate);
   }, [startDate, endDate]);
 
   const dailyBudget = useMemo(() => {
@@ -109,6 +102,11 @@ export default function CreateTripWizard({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Solo se crea el viaje desde el paso 3 (evita envíos por Enter o doble clic en pasos previos)
+    if (currentStep !== 3) {
+      setCurrentStep((prev) => (Math.min(3, prev + 1) as 1 | 2 | 3));
+      return;
+    }
     const newTrip: Trip = {
       id: 'trip-' + Date.now(),
       userId: currentUserId || 'user-admin-jools',
@@ -428,6 +426,7 @@ export default function CreateTripWizard({
 
             {currentStep < 3 ? (
               <button
+                key="wizard-continue"
                 type="button"
                 className="btn-primary"
                 onClick={() => setCurrentStep((prev) => (prev + 1) as any)}
@@ -437,6 +436,7 @@ export default function CreateTripWizard({
               </button>
             ) : (
               <button
+                key="wizard-submit"
                 type="submit"
                 className="btn-primary btn-submit-wizard"
               >

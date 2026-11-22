@@ -1,5 +1,6 @@
 // Datos del viaje y generador dinámico de días para cualquier destino del mundo
 import { Trip } from '../types/trip';
+import { parseLocalDate, toLocalIsoDate, countTripDays } from '../utils/helpers';
 
 export interface DayInfo {
   dayNumber: number;
@@ -170,10 +171,9 @@ export const generateTripDays = (trip?: Trip): DayInfo[] => {
   }
 
   try {
-    const start = new Date(trip.startDate);
-    const end = new Date(trip.endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+    const start = parseLocalDate(trip.startDate);
+    if (isNaN(start.getTime())) return INITIAL_DAYS;
+    const diffDays = countTripDays(trip.startDate, trip.endDate);
 
     const colors = ['#38bdf8', '#fbbf24', '#818cf8', '#34d399', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf'];
     const days: DayInfo[] = [];
@@ -181,7 +181,7 @@ export const generateTripDays = (trip?: Trip): DayInfo[] => {
     for (let i = 0; i < diffDays; i++) {
       const d = new Date(start);
       d.setDate(d.getDate() + i);
-      const isoDate = d.toISOString().split('T')[0];
+      const isoDate = toLocalIsoDate(d);
       const dayNum = i + 1;
       const isLast = i === diffDays - 1;
 

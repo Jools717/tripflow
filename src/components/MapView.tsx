@@ -4,7 +4,8 @@ import { Calendar, Filter, MapPin, Compass } from 'lucide-react';
 import { Activity } from '../types/activity';
 import { Trip } from '../types/trip';
 import { INITIAL_DAYS, generateTripDays } from '../data/initialData';
-import { getGoogleMapsTransitUrl, getCategoryBadge } from '../utils/helpers';
+import { getCategoryBadge } from '../utils/helpers';
+import { useDirections } from './directions/directionsContext';
 import { getDestinationCoordinates } from '../data/cityCoordinates';
 
 interface MapViewProps {
@@ -18,6 +19,7 @@ export default function MapView({ activities, selectedActivity, activeTrip }: Ma
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const openDirections = useDirections();
 
   const [filterDay, setFilterDay] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -90,7 +92,6 @@ export default function MapView({ activities, selectedActivity, activeTrip }: Ma
       if (!act.coords) return;
       const [lat, lng] = act.coords;
       const catBadge = getCategoryBadge(act.category);
-      const mapsUrl = getGoogleMapsTransitUrl(act);
 
       const customIcon = L.divIcon({
         className: 'custom-map-marker-wrapper',
@@ -116,15 +117,19 @@ export default function MapView({ activities, selectedActivity, activeTrip }: Ma
           ${act.address ? `<p class="popup-address">📍 ${act.address}</p>` : ''}
           ${act.tip ? `<p class="popup-tip">💡 ${act.tip}</p>` : ''}
           <div class="popup-footer">
-            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="popup-maps-btn">
+            <button type="button" class="popup-maps-btn" data-directions-id="${act.id}">
               <span>Cómo llegar (Google Maps)</span>
               <span class="btn-arrow">↗</span>
-            </a>
+            </button>
           </div>
         </div>
       `;
 
       marker.bindPopup(popupContent);
+      marker.on('popupopen', (e: L.PopupEvent) => {
+        const btn = e.popup.getElement()?.querySelector<HTMLButtonElement>('[data-directions-id]');
+        if (btn) btn.onclick = () => openDirections(act);
+      });
       markersLayerRef.current?.addLayer(marker);
       bounds.extend([lat, lng]);
 
@@ -139,7 +144,7 @@ export default function MapView({ activities, selectedActivity, activeTrip }: Ma
     if (filteredPlaces.length > 0 && !selectedActivity) {
       mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
-  }, [filteredPlaces, selectedActivity]);
+  }, [filteredPlaces, selectedActivity, openDirections]);
 
   return (
     <div className="map-view-container">

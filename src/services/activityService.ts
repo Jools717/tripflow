@@ -1,4 +1,5 @@
 import { Activity, ActivityType, PurchaseItem } from '../types/activity';
+import { reportCloudError } from './cloudErrors';
 import { DbActivityRow } from '../types/supabase';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -81,24 +82,24 @@ export const dbToActivity = (row: DbActivityRow): Activity => {
 export const upsertActivityDb = async (activity: Activity): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   const { error } = await supabase.from('activities').upsert(activityToDb(activity));
-  if (error) console.error('Error upserting activity in Supabase:', error);
+  reportCloudError('upsert activities', error);
 };
 
 export const insertActivityDb = async (activity: Activity): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   const { error } = await supabase.from('activities').insert(activityToDb(activity));
-  if (error) console.error('Error inserting activity in Supabase:', error);
+  reportCloudError('insert activities', error);
 };
 
 export const updateActivityFieldsDb = async (id: string, fields: Partial<DbActivityRow>): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   const { error } = await supabase.from('activities').update(fields).eq('id', id);
-  if (error) console.error('Error updating activity fields in Supabase:', error);
+  reportCloudError('update activities', error);
 };
 
 export const deleteActivityDb = async (id: string): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return;
   const { error } = await supabase.from('activities').delete().eq('id', id);
-  if (error) console.error('Error deleting activity in Supabase:', error);
+  reportCloudError('delete activities', error);
 };
 
